@@ -27,4 +27,5 @@ dependencies {
     compile 'com.android.support:support-annotations:23.1.1'
     compile 'com.jakewharton:butterknife:6.1.0'
     compile files('libs/xstream-1.4.7.jar')
+    compile project(':network')
 }
