@@ -44,13 +44,13 @@ public class XmlUtils {
         try {
             obj = (T) xmStream.fromXML(is);
         } catch (Exception e) {
-            TLog.log(TAG, "解析xml发生异常：" + e.getMessage());
+            TLog.i(TAG, "解析xml发生异常：" + e.getMessage());
         } finally {
             if (null != is) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    TLog.log(TAG, "关闭流出现异常：" + e.getMessage());
+                    TLog.i(TAG, "关闭流出现异常：" + e.getMessage());
                 }
             }
         }

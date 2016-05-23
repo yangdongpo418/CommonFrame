@@ -1,19 +1,15 @@
-package com.android.volley.base;
+package com.android.volley.toolbox;
 
-import android.os.Debug;
+import android.net.Uri;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
 import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.google.gson.Gson;
 
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,10 +17,6 @@ import java.util.Map;
 /**
  * Created by byang059 on 5/19/2016.
  * This is common custom request, always used for normal busniess work, it include below function
- * 1.进一步封装更接近实际业务的request
- * 2.用户输入内部类的形式，类似key value，我内部使用Gson进行封装。
- * 3.提供公共参数接口 get方式或者post方式
- * 4.
  */
 public class GsonJsonRequest<T> extends Request<T> {
     protected static final String PROTOCOL_CHARSET = "utf-8";
@@ -34,10 +26,9 @@ public class GsonJsonRequest<T> extends Request<T> {
     private static final String PROTOCOL_CONTENT_TYPE =
             String.format("application/json; charset=%s", PROTOCOL_CHARSET);
 
-    private final ResponseCallBack<T> listener;
-    private final BodyParam bodyParam;
+    private final Map<String, Object> bodyParam;
+    private final Response.Listener<T> listener;
     private HashMap<String, String> headers;
-    public boolean isAddPublicParam = false;
     public Class<T> mClass;
 
     @Override
@@ -45,19 +36,13 @@ public class GsonJsonRequest<T> extends Request<T> {
         return super.compareTo(other);
     }
 
-    public GsonJsonRequest(int method, String url, BodyParam bodyParam, ResponseCallBack listener, boolean isAddPublicParam) {
-        super(method, url, listener);
-        this.listener = listener;
+    public GsonJsonRequest(int method, String url, Map<String, Object> bodyParam, Class<T> clazz,Response.Listener<T> listener, Response.ErrorListener errorListener) {
+        super(method, url, errorListener);
+        this.mClass = clazz;
         this.bodyParam = bodyParam;
-        this.isAddPublicParam = isAddPublicParam;
-        setShouldCache(false);
-
+        this.listener = listener;
         if (method == Method.GET && bodyParam != null) {
             addGetParams();
-        }
-
-        if (isAddPublicParam) {
-            addPublicParams();
         }
     }
 
@@ -136,56 +121,14 @@ public class GsonJsonRequest<T> extends Request<T> {
         headers.put(key, value);
     }
 
-    /**
-     * 根据实际的业务加入公共参数，例如当前app的版本号，后台api的版本
-     */
-    public void addPublicParams() {
-        StringBuilder sb = new StringBuilder();
-        if (mMethod == Method.GET) {
-            if (bodyParam == null) {
-                mUrl = sb.append(mUrl).append("?").append(PublicParams.instance().toString()).toString();
-            } else {
-                mUrl = sb.append(mUrl).append("&").append(PublicParams.instance().toString()).toString();
+    public void addGetParams() {
+        if (bodyParam != null) {
+            Uri uri = Uri.parse(mUrl);
+            Uri.Builder builder = uri.buildUpon();
+            for (HashMap.Entry<String, Object> entry : bodyParam.entrySet()) {
+                builder.appendQueryParameter(entry.getKey(), String.valueOf(entry.getValue()));
             }
-        } else if (mMethod == Method.POST) {
-            mUrl = sb.append(mUrl).append("?").append(PublicParams.instance().toString()).toString();
+            mUrl = builder.build().toString();
         }
-    }
-
-    public void addGetParams(){
-        StringBuilder sb = new StringBuilder();
-        sb.append(mUrl);
-        sb.append("?");
-
-        Class<?> clazz = bodyParam.getClass();
-        Field[] fields = clazz.getFields();
-
-        if (fields.length == 0){
-            return;
-        }
-
-        for (int i = 0 ; i < fields.length ; i++ ) {
-            Field field =  fields[i];
-            String name = field.getName();
-            String value = null;
-            try {
-                Object v = field.get(bodyParam);
-                if (v == null){
-                    continue;
-                }
-                value = String.valueOf(v);
-
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-
-            if (i == fields.length -1){
-                sb.append(name).append("=").append(value);
-            }else{
-                sb.append(name).append("=").append(value).append("&");
-            }
-        }
-
-        mUrl = sb.toString();
     }
 }

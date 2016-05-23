@@ -122,7 +122,7 @@ public class CommonToast {
 				}
 			}, _duration);
 		} else {
-			TLog.error("Toast not shown! Content view is null!");
+			TLog.e("Toast not shown! Content view is null!");
 		}
 	}
 

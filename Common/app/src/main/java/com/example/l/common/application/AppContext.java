@@ -5,11 +5,14 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 
 import com.example.l.common.AppConfig;
+import com.example.l.common.api.HttpClient;
 import com.example.l.common.base.BaseApplication;
 import com.example.l.common.bean.User;
 import com.example.l.common.constants.Constants;
 import com.example.l.common.utils.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -45,6 +48,10 @@ public class AppContext extends BaseApplication {
     }
 
     private void init() {
+        Map<String,Object> publicParams = new HashMap<>();
+        publicParams.put("public1","nihao");
+        publicParams.put("version",2);
+        HttpClient.setPublicParams(publicParams);
 
     }
 
