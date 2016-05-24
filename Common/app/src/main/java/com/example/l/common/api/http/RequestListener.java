@@ -1,5 +1,6 @@
-package com.example.l.common.api;
+package com.example.l.common.api.http;
 
+import com.android.volley.ClientError;
 import com.android.volley.Network;
 import com.android.volley.NetworkError;
 import com.android.volley.ParseError;
@@ -30,7 +31,9 @@ public abstract class RequestListener<T> implements Response.Listener<T>,Respons
             error.printStackTrace();
         }else if (error instanceof NetworkError){
             err = "网络异常";
-        } else if (error instanceof ServerError){
+        } else if (error instanceof ClientError){
+            err = "客户端异常";
+        }else if (error instanceof ServerError){
             err = "服务器异常";
         } else{
             err = "未知异常";

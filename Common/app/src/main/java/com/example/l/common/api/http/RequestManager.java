@@ -1,8 +1,7 @@
-package com.example.l.common.api;
+package com.example.l.common.api.http;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
-import com.example.l.common.AppConfig;
 import com.example.l.common.application.AppContext;
 
 /**

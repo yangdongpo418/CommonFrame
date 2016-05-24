@@ -23,7 +23,7 @@ public class LogUploadService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //
-        final File log = FileUtils.getSaveFile("OSChina", "OSCLog.log");
+        final File log = FileUtils.getSaveFile("Common", "text.log");
         String data = null;
         try {
             FileInputStream inputStream = new FileInputStream(log);

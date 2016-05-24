@@ -16,8 +16,8 @@ import com.example.l.common.ui.dialog.DialogControl;
 /**
  * 碎片基类
  * 
- * @author FireAnt（http://my.oschina.net/LittleDY）
- * @created 2014年9月25日 上午11:18:46
+ * @author
+ * @created
  * 
  */
 public class BaseFragment extends Fragment{

@@ -11,7 +11,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.example.l.common.R;
-import com.example.l.common.manager.AppManager;
+import com.example.l.common.manager.ActivityManager;
 import com.example.l.common.ui.dialog.CommonToast;
 import com.example.l.common.ui.dialog.DialogControl;
 import com.example.l.common.utils.DialogHelp;
@@ -49,7 +49,7 @@ public abstract class BaseActivity extends ActionBarActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        AppManager.getAppManager().addActivity(this);
+        ActivityManager.getAppManager().addActivity(this);
         if (!hasActionBar()) {
             // supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
         }

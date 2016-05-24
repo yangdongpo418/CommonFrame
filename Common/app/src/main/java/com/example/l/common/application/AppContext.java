@@ -4,15 +4,15 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 
+import com.android.frecso.OkHttpImagePipelineConfigFactory;
 import com.example.l.common.AppConfig;
-import com.example.l.common.api.HttpClient;
 import com.example.l.common.base.BaseApplication;
 import com.example.l.common.bean.User;
 import com.example.l.common.constants.Constants;
 import com.example.l.common.utils.StringUtils;
+import com.facebook.drawee.backends.pipeline.Fresco;
+import com.facebook.imagepipeline.core.ImagePipelineConfig;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -25,9 +25,9 @@ import static com.example.l.common.AppConfig.KEY_TWEET_DRAFT;
 /**
  * 全局应用程序类：用于保存和调用全局应用配置及访问网络数据
  *
- * @author 火蚁 (http://my.oschina.net/LittleDY)
- * @version 1.0
- * @created 2014-04-22
+ * @author
+ * @version
+ * @created
  */
 public class AppContext extends BaseApplication {
 
@@ -44,15 +44,26 @@ public class AppContext extends BaseApplication {
         super.onCreate();
         instance = this;
         init();
-        initLogin();
     }
 
     private void init() {
-        Map<String,Object> publicParams = new HashMap<>();
+        initLogin();
+        initPublicParams();
+        initFrecso();
+
+    }
+
+    private void initFrecso() {
+        ImagePipelineConfig config =OkHttpImagePipelineConfigFactory.newBuilder(this)
+                .build();
+        Fresco.initialize(instance,config);
+    }
+
+    private void initPublicParams() {
+        /*Map<String,Object> publicParams = new HashMap<>();
         publicParams.put("public1","nihao");
         publicParams.put("version",2);
-        HttpClient.setPublicParams(publicParams);
-
+        HttpUtils.setPublicParams(publicParams);*/
     }
 
     private void initLogin() {

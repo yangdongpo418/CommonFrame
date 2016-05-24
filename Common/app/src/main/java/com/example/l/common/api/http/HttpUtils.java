@@ -1,10 +1,9 @@
-package com.example.l.common.api;
+package com.example.l.common.api.http;
 
 import android.net.Uri;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.GsonJsonRequest;
-import com.example.l.common.bean.Weather;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +11,7 @@ import java.util.Map;
 /**
  * Created by byang059 on 5/23/2016.
  */
-public class HttpClient {
+public class HttpUtils {
 
     private static Map<String, Object> publicParams;
 
@@ -45,6 +44,6 @@ public class HttpClient {
     }
 
     public static void setPublicParams(Map<String, Object> publicParams) {
-        HttpClient.publicParams = publicParams;
+        HttpUtils.publicParams = publicParams;
     }
 }

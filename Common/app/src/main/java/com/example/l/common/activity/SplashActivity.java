@@ -9,7 +9,7 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 
 import com.example.l.common.R;
-import com.example.l.common.manager.AppManager;
+import com.example.l.common.manager.ActivityManager;
 import com.example.l.common.service.LogUploadService;
 import com.example.l.common.utils.TDevice;
 
@@ -26,13 +26,13 @@ import java.io.File;
  * @created 2014年12月22日 上午11:51:56
  * 
  */
-public class AppStart extends Activity {
+public class SplashActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // 防止第三方跳转时出现双实例
-        Activity aty = AppManager.getActivity(MainActivity.class);
+        Activity aty = ActivityManager.getActivity(MainActivity.class);
         if (aty != null && !aty.isFinishing()) {
             finish();
         }

@@ -18,7 +18,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.l.common.R;
-import com.example.l.common.utils.StringUtils;
 
 
 @SuppressLint("InflateParams")
@@ -51,59 +50,6 @@ public class BaseApplication extends Application {
 
     public static Resources resources() {
         return _resource;
-    }
-
-    /**
-     * 放入已读文章列表中
-     *
-     */
-    public static void putReadedPostList(String prefFileName, String key,
-                                         String value) {
-        SharedPreferences preferences = getPreferences(prefFileName);
-        int size = preferences.getAll().size();
-        Editor editor = preferences.edit();
-        if (size >= 100) {
-            editor.clear();
-        }
-        editor.putString(key, value);
-        apply(editor);
-    }
-
-    /**
-     * 读取是否是已读的文章列表
-     *
-     * @return
-     */
-    public static boolean isOnReadedPostList(String prefFileName, String key) {
-        return getPreferences(prefFileName).contains(key);
-    }
-
-    /**
-     * 记录列表上次刷新时间
-     *
-     * @param key
-     * @param value
-     * @return void
-     * @author 火蚁
-     * 2015-2-9 下午2:21:37
-     */
-    public static void putToLastRefreshTime(String key, String value) {
-        SharedPreferences preferences = getPreferences(LAST_REFRESH_TIME);
-        Editor editor = preferences.edit();
-        editor.putString(key, value);
-        apply(editor);
-    }
-
-    /**
-     * 获取列表的上次刷新时间
-     *
-     * @param key
-     * @return
-     * @author 火蚁
-     * 2015-2-9 下午2:22:04
-     */
-    public static String getLastRefreshTime(String key) {
-        return getPreferences(LAST_REFRESH_TIME).getString(key, StringUtils.getCurTimeStr());
     }
 
     @TargetApi(Build.VERSION_CODES.GINGERBREAD)

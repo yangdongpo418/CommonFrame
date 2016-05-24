@@ -8,23 +8,23 @@ import java.util.Stack;
 /**
  * activity堆栈式管理
  *
- * @author FireAnt（http://my.oschina.net/LittleDY）
- * @created 2014年10月30日 下午6:22:05
+ * @author
+ * @created
  *
  */
-public class AppManager {
+public class ActivityManager {
 
     private static Stack<Activity> activityStack;
-    private static AppManager instance;
+    private static ActivityManager instance;
 
-    private AppManager() {}
+    private ActivityManager() {}
 
     /**
      * 单一实例
      */
-    public static AppManager getAppManager() {
+    public static ActivityManager getAppManager() {
         if (instance == null) {
-            instance = new AppManager();
+            instance = new ActivityManager();
         }
         return instance;
     }

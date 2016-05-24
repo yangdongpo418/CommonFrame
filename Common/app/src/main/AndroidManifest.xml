@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.AppStart"></activity>
+        <activity android:name=".activity.SplashActivity"></activity>
 
         <service android:name=".service.DownloadService"></service>
         <service android:name=".service.LogUploadService"></service>

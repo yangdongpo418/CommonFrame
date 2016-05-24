@@ -7,7 +7,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Build;
 import android.os.Looper;
 
-import com.example.l.common.manager.AppManager;
+import com.example.l.common.manager.ActivityManager;
 import com.example.l.common.utils.UIHelper;
 
 import org.kymjs.kjframe.utils.FileUtils;
@@ -27,9 +27,9 @@ import java.net.UnknownHostException;
 /**
  * 应用程序异常：用于捕获异常和提示错误信息
  *
- * @author FireAnt（http://my.oschina.net/LittleDY）
- * @author kymjs (kymjs123@gmali.com)
- * @created 2014年9月25日 下午5:34:05
+ * @author
+ * @author
+ * @created
  */
 @SuppressWarnings("serial")
 public class AppException extends Exception implements UncaughtExceptionHandler {
@@ -162,7 +162,7 @@ public class AppException extends Exception implements UncaughtExceptionHandler 
             if (!success) {
                 return false;
             } else {
-                final Context context = AppManager.getAppManager()
+                final Context context = ActivityManager.getAppManager()
                         .currentActivity();
                 // 显示异常信息&发送报告
                 new Thread() {
