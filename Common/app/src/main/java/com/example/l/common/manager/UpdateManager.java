@@ -1,4 +1,4 @@
-package com.example.l.common.utils;
+package com.example.l.common.manager;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -8,6 +8,8 @@ import android.support.v7.app.AlertDialog;
 
 import com.example.l.common.application.AppContext;
 import com.example.l.common.bean.Update;
+import com.example.l.common.utils.DialogHelp;
+import com.example.l.common.utils.TDevice;
 
 /**
  * 更新管理类

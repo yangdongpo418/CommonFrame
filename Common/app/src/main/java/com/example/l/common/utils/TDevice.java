@@ -138,24 +138,6 @@ public class TDevice {
         return size;
     }
 
-    public static int getStatusBarHeight() {
-        Class<?> c = null;
-        Object obj = null;
-        Field field = null;
-        int x = 0;
-        try {
-            c = Class.forName("com.android.internal.R$dimen");
-            obj = c.newInstance();
-            field = c.getField("status_bar_height");
-            x = Integer.parseInt(field.get(obj).toString());
-            return BaseApplication.context().getResources()
-                    .getDimensionPixelSize(x);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
     public static String getUdid() {
         String udid = BaseApplication.getPreferences().getString("udid", "");
         if (udid.length() == 0) {
@@ -623,7 +605,7 @@ public class TDevice {
         }
     }
 
-    public static int getStatuBarHeight() {
+    public static int getStatusBarHeight() {
         Class<?> c = null;
         Object obj = null;
         Field field = null;

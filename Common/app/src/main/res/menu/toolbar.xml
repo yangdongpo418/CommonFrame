@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:title="搜索"
+          android:id="@+id/menu_search"
+          android:icon="@android:drawable/ic_menu_search"
+          app:showAsAction="always">
+    </item>
+
+    <item android:title="更多"
+          android:id="@+id/menu_more"
+          app:showAsAction="never"
+        ></item>
+
+    <item android:title="举报"
+          android:id="@+id/menu_check"
+          app:showAsAction="never"
+        ></item>
+
+    <item android:title="喜欢"
+          android:id="@+id/menu_like"
+          app:showAsAction="never"
+        ></item>
+
+</menu>

@@ -8,7 +8,7 @@ import android.os.Build;
 import android.os.Looper;
 
 import com.example.l.common.manager.ActivityManager;
-import com.example.l.common.utils.UIHelper;
+import com.example.l.common.ui.UIHelper;
 
 import org.kymjs.kjframe.utils.FileUtils;
 import org.kymjs.kjframe.utils.SystemTool;

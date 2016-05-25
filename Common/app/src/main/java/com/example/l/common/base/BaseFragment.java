@@ -20,7 +20,7 @@ import com.example.l.common.ui.dialog.DialogControl;
  * @created
  * 
  */
-public class BaseFragment extends Fragment{
+public class BaseFragment extends Fragment implements DialogControl{
 
     public static final int STATE_NONE = 0;
     public static final int STATE_REFRESH = 1;
@@ -75,18 +75,18 @@ public class BaseFragment extends Fragment{
         return false;
     }
 
-    protected void hideWaitDialog() {
+    public void hideWaitDialog() {
         FragmentActivity activity = getActivity();
         if (activity instanceof DialogControl) {
             ((DialogControl) activity).hideWaitDialog();
         }
     }
 
-    protected ProgressDialog showWaitDialog() {
+    public ProgressDialog showWaitDialog() {
         return showWaitDialog(R.string.loading);
     }
 
-    protected ProgressDialog showWaitDialog(int resid) {
+    public ProgressDialog showWaitDialog(int resid) {
         FragmentActivity activity = getActivity();
         if (activity instanceof DialogControl) {
             return ((DialogControl) activity).showWaitDialog(resid);
@@ -94,7 +94,7 @@ public class BaseFragment extends Fragment{
         return null;
     }
 
-    protected ProgressDialog showWaitDialog(String str) {
+    public ProgressDialog showWaitDialog(String str) {
         FragmentActivity activity = getActivity();
         if (activity instanceof DialogControl) {
             return ((DialogControl) activity).showWaitDialog(str);

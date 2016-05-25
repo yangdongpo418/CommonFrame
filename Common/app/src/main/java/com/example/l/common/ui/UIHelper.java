@@ -1,7 +1,9 @@
-package com.example.l.common.utils;
+package com.example.l.common.ui;
 
 import android.content.Context;
 import android.content.DialogInterface;
+
+import com.example.l.common.utils.DialogHelp;
 
 /**
  * 界面帮助类

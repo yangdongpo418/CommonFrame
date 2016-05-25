@@ -2,13 +2,9 @@ package com.example.l.common.base;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import com.example.l.common.R;
 import com.example.l.common.manager.ActivityManager;
@@ -17,27 +13,18 @@ import com.example.l.common.ui.dialog.DialogControl;
 import com.example.l.common.utils.DialogHelp;
 import com.example.l.common.utils.TDevice;
 
-import org.kymjs.kjframe.utils.StringUtils;
-
 import butterknife.ButterKnife;
 
-
 /**
- * baseActionBar Activity
- * 
- * @author FireAnt（http://my.oschina.net/LittleDY）
- * @created 2014年9月25日 上午11:30:15 引用自：tonlin
+ * @author:dongpo 创建时间: 5/24/2016
+ * 描述:
+ * 修改:
  */
-public abstract class BaseActivity extends ActionBarActivity implements
-        DialogControl, View.OnClickListener {
-    public static final String INTENT_ACTION_EXIT_APP = "INTENT_ACTION_EXIT_APP";
-
+public class BaseActivity extends AppCompatActivity implements DialogControl {
     private boolean _isVisible;
     private ProgressDialog _waitDialog;
 
     protected LayoutInflater mInflater;
-    protected ActionBar mActionBar;
-    private TextView mTvActionTitle;
 
     @Override
     protected void onDestroy() {
@@ -50,19 +37,15 @@ public abstract class BaseActivity extends ActionBarActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityManager.getAppManager().addActivity(this);
-        if (!hasActionBar()) {
-            // supportRequestWindowFeature(Window.FEATURE_NO_TITLE);
-        }
-        onBeforeSetContentLayout();
-        if (getLayoutId() != 0) {
-            setContentView(getLayoutId());
-        }
-        mActionBar = getSupportActionBar();
         mInflater = getLayoutInflater();
-        if (hasActionBar()) {
-            initActionBar(mActionBar);
-        }
 
+        onBeforeSetContentLayout();
+
+        View layoutView = getLayoutView();
+
+        if (layoutView != null) {
+            setContentView(layoutView);
+        }
         // 通过注解绑定控件
         ButterKnife.bind(this);
 
@@ -74,74 +57,24 @@ public abstract class BaseActivity extends ActionBarActivity implements
 
     protected void onBeforeSetContentLayout() {}
 
-    protected boolean hasActionBar() {
-        return true;
-    }
-
     protected int getLayoutId() {
         return 0;
+    }
+
+    protected View getLayoutView(){
+        if(getLayoutId()!=0){
+            return mInflater.inflate(getLayoutId(),null);
+        }
+        
+        return null;
     }
 
     protected View inflateView(int resId) {
         return mInflater.inflate(resId, null);
     }
 
-    protected int getActionBarTitle() {
-        return R.string.app_name;
-    }
-
-    protected boolean hasBackButton() {
-        return false;
-    }
 
     protected void init(Bundle savedInstanceState) {}
-
-    protected void initActionBar(ActionBar actionBar) {
-        if (actionBar == null)
-            return;
-        if (hasBackButton()) {
-            mActionBar.setDisplayHomeAsUpEnabled(true);
-            mActionBar.setHomeButtonEnabled(true);
-        } else {
-            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE);
-            actionBar.setDisplayUseLogoEnabled(false);
-            int titleRes = getActionBarTitle();
-            if (titleRes != 0) {
-                actionBar.setTitle(titleRes);
-            }
-        }
-    }
-
-    public void setActionBarTitle(int resId) {
-        if (resId != 0) {
-            setActionBarTitle(getString(resId));
-        }
-    }
-
-    public void setActionBarTitle(String title) {
-        if (StringUtils.isEmpty(title)) {
-            title = getString(R.string.app_name);
-        }
-        if (hasActionBar() && mActionBar != null) {
-            if (mTvActionTitle != null) {
-                mTvActionTitle.setText(title);
-            }
-            mActionBar.setTitle(title);
-        }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-        case android.R.id.home:
-            onBackPressed();
-            break;
-
-        default:
-            break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     protected void onPause() {
@@ -202,13 +135,6 @@ public abstract class BaseActivity extends ActionBarActivity implements
         }
     }
 
-    @Override
-    public boolean onMenuOpened(int featureId, Menu menu) {
-
-        // setOverflowIconVisible(featureId, menu);
-        return super.onMenuOpened(featureId, menu);
-    }
-
-    public abstract void initView();
-    public abstract void initData();
+    public void initView(){}
+    public void initData(){}
 }

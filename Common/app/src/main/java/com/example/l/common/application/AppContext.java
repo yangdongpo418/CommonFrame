@@ -6,10 +6,12 @@ import android.content.pm.PackageManager.NameNotFoundException;
 
 import com.android.frecso.OkHttpImagePipelineConfigFactory;
 import com.example.l.common.AppConfig;
+import com.example.l.common.BuildConfig;
 import com.example.l.common.base.BaseApplication;
 import com.example.l.common.bean.User;
 import com.example.l.common.constants.Constants;
 import com.example.l.common.utils.StringUtils;
+import com.example.l.common.utils.TLog;
 import com.facebook.drawee.backends.pipeline.Fresco;
 import com.facebook.imagepipeline.core.ImagePipelineConfig;
 
@@ -50,7 +52,12 @@ public class AppContext extends BaseApplication {
         initLogin();
         initPublicParams();
         initFrecso();
+        initLogger();
 
+    }
+
+    private void initLogger() {
+        TLog.init(getPackageName(),BuildConfig.DEBUG);
     }
 
     private void initFrecso() {

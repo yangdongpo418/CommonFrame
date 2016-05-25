@@ -21,11 +21,12 @@ public class ViewUtils {
      *
      * @return void
      * @param tv
-     * @param flag
+     * @param
      */
     public static void setTextViewLineFlag(TextView tv, int flags) {
-	tv.getPaint().setFlags(flags);
-	tv.invalidate();
+        tv.getPaint().setFlags(flags);
+        tv.invalidate();
     }
+
 }
 

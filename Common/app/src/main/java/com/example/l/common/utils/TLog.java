@@ -1,41 +1,51 @@
 package com.example.l.common.utils;
 
-import android.util.Log;
+import com.orhanobut.logger.Logger;
 
 public class TLog {
-	public static final String LOG_TAG = "Common";
 	public static boolean DEBUG = true;
 
 	public TLog() {
 	}
 
+	public static void init(String tag,boolean debug){
+		TLog.DEBUG = debug;
+		Logger.init(tag);
+	}
+
 	public static final void analytics(String log) {
 		if (DEBUG)
-			Log.d(LOG_TAG, log);
+			Logger.d(log,DEBUG);
 	}
 
 	public static final void e(String log) {
 		if (DEBUG)
-			Log.e(LOG_TAG, "" + log);
+		Logger.e(log,DEBUG);
 	}
 
 	public static final void i(String log) {
 		if (DEBUG)
-			Log.i(LOG_TAG, log);
+		Logger.i(log,DEBUG);
 	}
 
 	public static final void i(String tag, String log) {
 		if (DEBUG)
-			Log.i(tag, log);
+			Logger.i(log,DEBUG);
 	}
 
 	public static final void v(String log) {
 		if (DEBUG)
-			Log.v(LOG_TAG, log);
+			Logger.v(log,DEBUG);
 	}
 
 	public static final void w(String log) {
 		if (DEBUG)
-			Log.w(LOG_TAG, log);
+			Logger.w(log,DEBUG);
+	}
+
+	public static final void exception(Exception e){
+		if(DEBUG){
+			e.printStackTrace();
+		}
 	}
 }

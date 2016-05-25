@@ -1,7 +1,6 @@
 package com.example.l.common.api.http;
 
 import com.android.volley.ClientError;
-import com.android.volley.Network;
 import com.android.volley.NetworkError;
 import com.android.volley.ParseError;
 import com.android.volley.Response;
@@ -39,8 +38,7 @@ public abstract class RequestListener<T> implements Response.Listener<T>,Respons
             err = "未知异常";
         }
 
-        error.printStackTrace();
-
+        TLog.exception(error);
         TLog.i(err);
         onFailure(err);
     }
