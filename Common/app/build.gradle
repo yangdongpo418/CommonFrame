@@ -21,12 +21,12 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile 'org.kymjs.kjframe:kjframe:2.6'
     compile 'com.android.support:support-annotations:23.1.1'
-    compile 'com.jakewharton:butterknife:7.0.0+'
+    compile 'com.jakewharton:butterknife:7.0.0'
     compile files('libs/xstream-1.4.7.jar')
     compile project(':network')
     compile 'com.orhanobut:logger:1.11'
+    compile 'com.android.support:recyclerview-v7:23.1.1'
 }

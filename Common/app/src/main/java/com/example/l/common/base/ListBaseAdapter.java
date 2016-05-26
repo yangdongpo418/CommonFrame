@@ -12,7 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.l.common.R;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 import org.kymjs.kjframe.utils.StringUtils;
 
@@ -204,7 +204,7 @@ public class ListBaseAdapter<T> extends BaseAdapter {
                     mFooterView.setVisibility(View.VISIBLE);
                     progress.setVisibility(View.GONE);
                     text.setVisibility(View.VISIBLE);
-                    if (TDevice.hasInternet()) {
+                    if (WindowUtils.hasInternet()) {
                         text.setText("加载出错了");
                     } else {
                         text.setText("没有可用的网络");

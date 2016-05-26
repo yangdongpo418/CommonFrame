@@ -11,7 +11,7 @@ import android.view.animation.Animation.AnimationListener;
 import com.example.l.common.R;
 import com.example.l.common.manager.ActivityManager;
 import com.example.l.common.service.LogUploadService;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 import org.kymjs.kjframe.http.KJAsyncTask;
 import org.kymjs.kjframe.utils.FileUtils;
@@ -63,7 +63,7 @@ public class SplashActivity extends Activity {
         super.onResume();
         int cacheVersion = PreferenceHelper.readInt(this, "first_install",
                 "first_install", -1);
-        int currentVersion = TDevice.getVersionCode();
+        int currentVersion = WindowUtils.getVersionCode();
         if (cacheVersion < currentVersion) {
             PreferenceHelper.write(this, "first_install", "first_install",
                     currentVersion);

@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.UUID;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class TDevice {
+public class WindowUtils {
 
     // 手机网络类型
     public static final int NETTYPE_WIFI = 0x01;
@@ -65,7 +65,7 @@ public class TDevice {
         PRE_HC = Build.VERSION.SDK_INT < 11;
     }
 
-    public TDevice() {
+    public WindowUtils() {
     }
 
     public static float dpToPixel(float dp) {

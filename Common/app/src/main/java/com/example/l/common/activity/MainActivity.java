@@ -1,11 +1,13 @@
 package com.example.l.common.activity;
 
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.example.l.common.R;
 import com.example.l.common.api.BackEndApi;
@@ -20,11 +22,14 @@ import butterknife.OnClick;
 
 public class MainActivity extends ToolBarActivity {
 
-    @Bind(R.id.request_net)
+    @Nullable@Bind(R.id.request_net)
     Button request;
 
-    @Bind(R.id.drawee_image)
+    @Nullable@Bind(R.id.drawee_image)
     SimpleDraweeView image;
+
+    @Nullable@Bind(R.id.main_iv)
+    ImageView main_iv;
 
     @Override
     protected int getLayoutId() {
@@ -58,6 +63,11 @@ public class MainActivity extends ToolBarActivity {
                 showToast(error,0, Gravity.CENTER);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
 
     @OnClick(R.id.request_image)

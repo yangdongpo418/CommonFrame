@@ -48,4 +48,5 @@ public class TLog {
 			e.printStackTrace();
 		}
 	}
+
 }

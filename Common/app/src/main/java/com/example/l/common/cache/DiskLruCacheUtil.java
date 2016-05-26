@@ -3,7 +3,7 @@ package com.example.l.common.cache;
 import android.content.Context;
 import android.os.Environment;
 
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 import org.kymjs.kjframe.utils.FileUtils;
 
@@ -27,7 +27,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class DiskLruCacheUtil {
 
-    private static int appVersion = TDevice.getVersionCode();
+    private static int appVersion = WindowUtils.getVersionCode();
 
     private static int valueCount = 1;// 同一个key可以对应多少个缓存文件
 

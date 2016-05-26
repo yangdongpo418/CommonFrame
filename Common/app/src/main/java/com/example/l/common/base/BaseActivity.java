@@ -11,7 +11,7 @@ import com.example.l.common.manager.ActivityManager;
 import com.example.l.common.ui.dialog.CommonToast;
 import com.example.l.common.ui.dialog.DialogControl;
 import com.example.l.common.utils.DialogHelp;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 import butterknife.ButterKnife;
 
@@ -29,8 +29,9 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        TDevice.hideSoftKeyboard(getCurrentFocus());
         ButterKnife.unbind(this);
+        WindowUtils.hideSoftKeyboard(getCurrentFocus());
+        ActivityManager.getAppManager().finishActivity(this);
     }
 
     @Override

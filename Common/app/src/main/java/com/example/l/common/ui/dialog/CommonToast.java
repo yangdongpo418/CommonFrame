@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.l.common.R;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 import com.example.l.common.utils.TLog;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
@@ -66,7 +66,7 @@ public class CommonToast {
 			FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(-2,
 					-2);
 			params.gravity = i;
-			int j = (int) TDevice.dpToPixel(16F);
+			int j = (int) WindowUtils.dpToPixel(16F);
 			params.setMargins(j, j, j, j);
 			_toastVw.setLayoutParams(params);
 		}

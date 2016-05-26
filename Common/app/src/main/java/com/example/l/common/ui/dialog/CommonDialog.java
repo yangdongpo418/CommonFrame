@@ -24,7 +24,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.l.common.R;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 
 public class CommonDialog extends Dialog {
@@ -111,9 +111,9 @@ public class CommonDialog extends Dialog {
     @Override
     protected void onCreate(Bundle bundle) {
         super.onCreate(bundle);
-        if (TDevice.isTablet()) {
-            int maxWidth = (int) TDevice.dpToPixel(360f);
-            if (maxWidth < TDevice.getScreenWidth()) {
+        if (WindowUtils.isTablet()) {
+            int maxWidth = (int) WindowUtils.dpToPixel(360f);
+            if (maxWidth < WindowUtils.getScreenWidth()) {
                 WindowManager.LayoutParams params = getWindow().getAttributes();
                 params.width = maxWidth;
                 getWindow().setAttributes(params);

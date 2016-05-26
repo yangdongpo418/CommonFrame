@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.example.l.common.R;
 import com.example.l.common.ui.dialog.DialogControl;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 import org.kymjs.kjframe.utils.StringUtils;
 
@@ -53,14 +53,14 @@ public class ToolBarActivity extends BaseActivity implements
         View customView = llContent.getChildAt(0);
         mTvToolBarCenter = (TextView) mToolbar.findViewById(R.id.common_toolbar_center);
 
-        if(setStatusBarMode()){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && setStatusBarMode()) {
             FrameLayout.LayoutParams toolBarParams = (FrameLayout.LayoutParams) mToolbar.getLayoutParams();
-            toolBarParams.topMargin = TDevice.getStatusBarHeight();
+            toolBarParams.topMargin = WindowUtils.getStatusBarHeight();
             mToolbar.setLayoutParams(toolBarParams);
             mToolbar.setBackgroundColor(getResources().getColor(android.R.color.transparent));
-        }else{
+        } else {
             FrameLayout.LayoutParams customViewParams = (FrameLayout.LayoutParams) customView.getLayoutParams();
-            customViewParams.topMargin = TDevice.getActionBarHeight(this);
+            customViewParams.topMargin = WindowUtils.getActionBarHeight(this);
             customView.setLayoutParams(customViewParams);
         }
 
@@ -71,7 +71,7 @@ public class ToolBarActivity extends BaseActivity implements
 
     @Override
     protected void onBeforeSetContentLayout() {
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && setStatusBarMode()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && setStatusBarMode()) {
             Window window = getWindow();
             window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS
                     | WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
@@ -101,13 +101,14 @@ public class ToolBarActivity extends BaseActivity implements
      * @return 设置statusBar的模式，true为全屏模式（浸入式模式），false为统一模式
      * 默认为false。
      */
-    protected boolean setStatusBarMode(){
+    protected boolean setStatusBarMode() {
         return false;
     }
 
     protected boolean hasBackButton() {
         return true;
     }
+
 
     protected void initActionBar(ActionBar actionBar) {
         if (actionBar == null)
@@ -147,19 +148,19 @@ public class ToolBarActivity extends BaseActivity implements
         mToolbar.setTitleTextColor(getResources().getColor(color));
     }
 
-    public void setActionBarCenterTitle(int resId){
+    public void setActionBarCenterTitle(int resId) {
         mTvToolBarCenter.setText(resId);
     }
 
-    public void setActionBarCenterTextColor(int resId){
+    public void setActionBarCenterTextColor(int resId) {
         mTvToolBarCenter.setTextColor(getResources().getColor(resId));
     }
 
-    public void setActionBarCenterTextSize(float size){
+    public void setActionBarCenterTextSize(float size) {
         mTvToolBarCenter.setTextSize(size);
     }
 
-    public void addActionBarCustomView(int layoutId){
-        mInflater.inflate(layoutId,mToolbar,true);
+    public void addActionBarCustomView(int layoutId) {
+        mInflater.inflate(layoutId, mToolbar, true);
     }
 }

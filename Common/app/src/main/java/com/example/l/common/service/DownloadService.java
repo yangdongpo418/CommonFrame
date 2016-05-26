@@ -16,7 +16,7 @@ import com.example.l.common.AppConfig;
 import com.example.l.common.R;
 import com.example.l.common.activity.MainActivity;
 import com.example.l.common.interf.ICallbackResult;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 import org.kymjs.kjframe.utils.StringUtils;
 
@@ -177,7 +177,7 @@ public class DownloadService extends Service {
 		if (!apkfile.exists()) {
 			return;
 		}
-		TDevice.installAPK(mContext, apkfile);
+		WindowUtils.installAPK(mContext, apkfile);
 	}
 
 	private Runnable mdownApkRunnable = new Runnable() {

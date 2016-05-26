@@ -2,7 +2,7 @@ package com.example.l.common.cache;
 
 import android.content.Context;
 
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -117,7 +117,7 @@ public class CacheManager {
 	}
 	long existTime = System.currentTimeMillis() - data.lastModified();
 	boolean failure = false;
-	if (TDevice.getNetworkType() == TDevice.NETTYPE_WIFI) {
+	if (WindowUtils.getNetworkType() == WindowUtils.NETTYPE_WIFI) {
 	    failure = existTime > wifi_cache_time ? true : false;
 	} else {
 	    failure = existTime > other_cache_time ? true : false;

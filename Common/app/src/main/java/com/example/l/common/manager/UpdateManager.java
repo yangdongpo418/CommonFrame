@@ -9,7 +9,7 @@ import android.support.v7.app.AlertDialog;
 import com.example.l.common.application.AppContext;
 import com.example.l.common.bean.Update;
 import com.example.l.common.utils.DialogHelp;
-import com.example.l.common.utils.TDevice;
+import com.example.l.common.utils.WindowUtils;
 
 /**
  * 更新管理类
@@ -59,7 +59,7 @@ public class UpdateManager {
             return false;
         }
         boolean haveNew = false;
-        int curVersionCode = TDevice.getVersionCode(AppContext
+        int curVersionCode = WindowUtils.getVersionCode(AppContext
                 .getInstance().getPackageName());
         if (curVersionCode < mUpdate.versionCode) {
             haveNew = true;
