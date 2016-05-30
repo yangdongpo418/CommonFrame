@@ -22,6 +22,6 @@ public class BackEndApi {
         params.put("name","zhangsan");
         params.put("value","李四");
         params.put("age",35);
-        HttpUtils.get("http://10.0.2.2:8080/manager/volley.json",params,Weather.class,listener);
+        HttpUtils.getBean("http://10.0.2.2:8080/manager/volley.json",params,Weather.class,listener);
     }
 }

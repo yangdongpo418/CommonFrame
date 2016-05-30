@@ -27,7 +27,6 @@ public abstract class RequestListener<T> implements Response.Listener<T>,Respons
             err = "网络超时";
         }else if (error instanceof ParseError){
             err = "解析错误";
-            error.printStackTrace();
         }else if (error instanceof NetworkError){
             err = "网络异常";
         } else if (error instanceof ClientError){

@@ -14,6 +14,7 @@ import com.example.l.common.api.BackEndApi;
 import com.example.l.common.api.http.RequestListener;
 import com.example.l.common.base.ToolBarActivity;
 import com.example.l.common.bean.Weather;
+import com.example.l.common.constants.Constants;
 import com.example.l.common.utils.TLog;
 import com.facebook.drawee.view.SimpleDraweeView;
 
@@ -56,6 +57,7 @@ public class MainActivity extends ToolBarActivity {
             public void onSuccess(Weather response) {
                 showToast(response.toString(),0, Gravity.CENTER);
                 TLog.i(response.toString());
+                updateViewState(Constants.STATE_LOADING);
             }
 
             @Override
@@ -92,7 +94,10 @@ public class MainActivity extends ToolBarActivity {
     }
 
     @Override
-    protected boolean setStatusBarMode() {
-        return true;
+    protected View onBeforeSetContentLayout(View contentView) {
+        setStatusBarMode(true);
+        View view = super.onBeforeSetContentLayout(contentView);
+        setLoadingStateEnable(true,contentView);
+        return view;
     }
 }

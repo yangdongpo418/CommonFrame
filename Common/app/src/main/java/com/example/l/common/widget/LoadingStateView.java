@@ -5,13 +5,14 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.example.l.common.R;
 import com.example.l.common.constants.Constants;
+
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 
 /**
@@ -20,13 +21,19 @@ import com.example.l.common.constants.Constants;
  */
 public class LoadingStateView extends FrameLayout {
 
-    private ImageView iv_empty;
-    private LinearLayout ll_error;
-    private ProgressBar pb_loading;
+    @Bind(R.id.view_state_empty)
+    TextView iv_empty;
 
-    private int state = Constants.STATE_LOADING;
-    private RelativeLayout rl_load;
-    private FrameLayout mFl_content;
+    @Bind(R.id.view_state_error)
+    LinearLayout ll_error;
+
+    @Bind(R.id.view_state_loading)
+    LinearLayout pb_loading;
+
+    @Bind(R.id.view_state_success)
+    FrameLayout mFl_content;
+
+    private int state = Constants.STATE_SUCCESS;
 
     public LoadingStateView(Context context) {
         this(context, null);
@@ -38,14 +45,17 @@ public class LoadingStateView extends FrameLayout {
 
     public LoadingStateView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        rl_load = (RelativeLayout) LayoutInflater.from(context).inflate(R.layout.view_loading_state,this,false);
-        iv_empty = (ImageView) rl_load.findViewById(R.id.view_empty);
-        ll_error = (LinearLayout) rl_load.findViewById(R.id.view_error);
-        pb_loading = (ProgressBar) rl_load.findViewById(R.id.view_pb_loading);
-        mFl_content = (FrameLayout) rl_load.findViewById(R.id.realtabcontent);
-        updateView(state);
-        LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
-        addView(rl_load, params);
+        LayoutInflater.from(context).inflate(R.layout.view_loading_state, this, true);
+        ButterKnife.bind(this);
+        updateState(state);
+    }
+
+    public void addSuccessView(View successView){
+        if(successView != null && successView.getParent() == null){
+            mFl_content.addView(successView);
+        }else{
+            throw new IllegalArgumentException("successView can't be null or have a parent view");
+        }
     }
 
 
@@ -53,31 +63,31 @@ public class LoadingStateView extends FrameLayout {
      * 根据不同的状态值，更新当前的View
      * @param currentState
      */
-    public void updateView(int currentState) {
+    public void updateState(int currentState) {
         switch (currentState) {
             case Constants.STATE_SUCCESS:
                 mFl_content.setVisibility(View.VISIBLE);
-                iv_empty.setVisibility(View.INVISIBLE);
-                ll_error.setVisibility(View.INVISIBLE);
-                pb_loading.setVisibility(View.INVISIBLE);
+                iv_empty.setVisibility(View.GONE);
+                ll_error.setVisibility(View.GONE);
+                pb_loading.setVisibility(View.GONE);
                 break;
             case Constants.STATE_ERROR:
-                mFl_content.setVisibility(View.INVISIBLE);
-                iv_empty.setVisibility(View.INVISIBLE);
+                mFl_content.setVisibility(View.GONE);
+                iv_empty.setVisibility(View.GONE);
                 ll_error.setVisibility(View.VISIBLE);
-                pb_loading.setVisibility(View.INVISIBLE);
+                pb_loading.setVisibility(View.GONE);
                 break;
             case Constants.STATE_LOADING:
-                mFl_content.setVisibility(View.INVISIBLE);
-                iv_empty.setVisibility(View.INVISIBLE);
-                ll_error.setVisibility(View.INVISIBLE);
+                mFl_content.setVisibility(View.GONE);
+                iv_empty.setVisibility(View.GONE);
+                ll_error.setVisibility(View.GONE);
                 pb_loading.setVisibility(View.VISIBLE);
                 break;
             case Constants.STATE_EMPTY:
-                mFl_content.setVisibility(View.INVISIBLE);
+                mFl_content.setVisibility(View.GONE);
                 iv_empty.setVisibility(View.VISIBLE);
-                ll_error.setVisibility(View.INVISIBLE);
-                pb_loading.setVisibility(View.INVISIBLE);
+                ll_error.setVisibility(View.GONE);
+                pb_loading.setVisibility(View.GONE);
                 break;
         }
     }

@@ -16,7 +16,6 @@ import java.util.Map;
 
 /**
  * Created by byang059 on 5/19/2016.
- * This is common custom request, always used for normal busniess work, it include below function
  */
 public class GsonJsonRequest<T> extends Request<T> {
     protected static final String PROTOCOL_CHARSET = "utf-8";
@@ -29,7 +28,8 @@ public class GsonJsonRequest<T> extends Request<T> {
     private final Map<String, Object> bodyParam;
     private final Response.Listener<T> listener;
     private HashMap<String, String> headers;
-    public Class<T> mClass;
+    private Class<T> mClass;
+
 
     @Override
     public int compareTo(Request<T> other) {
@@ -45,7 +45,6 @@ public class GsonJsonRequest<T> extends Request<T> {
             addGetParams();
         }
     }
-
 
     @Override
     protected Response<T> parseNetworkResponse(NetworkResponse response) {
@@ -131,4 +130,5 @@ public class GsonJsonRequest<T> extends Request<T> {
             mUrl = builder.build().toString();
         }
     }
+
 }

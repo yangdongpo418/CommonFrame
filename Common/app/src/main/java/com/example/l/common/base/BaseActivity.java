@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import com.example.l.common.R;
 import com.example.l.common.manager.ActivityManager;
@@ -12,6 +14,7 @@ import com.example.l.common.ui.dialog.CommonToast;
 import com.example.l.common.ui.dialog.DialogControl;
 import com.example.l.common.utils.DialogHelp;
 import com.example.l.common.utils.WindowUtils;
+import com.example.l.common.widget.LoadingStateView;
 
 import butterknife.ButterKnife;
 
@@ -25,6 +28,9 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     private ProgressDialog _waitDialog;
 
     protected LayoutInflater mInflater;
+    private LoadingStateView mLoadingStateView;
+    private boolean mIsAddLoadingState = false;
+    private View mTargetView;
 
     @Override
     protected void onDestroy() {
@@ -40,33 +46,79 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
         ActivityManager.getAppManager().addActivity(this);
         mInflater = getLayoutInflater();
 
-        onBeforeSetContentLayout();
-
-        View layoutView = getLayoutView();
+        View layoutView = onBeforeSetContentLayout(getLayoutView());
 
         if (layoutView != null) {
+            if(mIsAddLoadingState){
+                layoutView = addLoadingStateView(layoutView,mTargetView);
+            }
             setContentView(layoutView);
+        }else{
+            throw new IllegalArgumentException("contentView can't be null");
         }
         // 通过注解绑定控件
         ButterKnife.bind(this);
 
-        init(savedInstanceState);
+        restoreInit(savedInstanceState);
         initView();
         initData();
         _isVisible = true;
     }
 
-    protected void onBeforeSetContentLayout() {}
+    /**
+     *
+     * @param targetView  用户要添加加载状态的view
+     * @param layoutView  整个布局的View
+     * @return
+     * 添加加载状态
+     */
+    private View addLoadingStateView(View layoutView,View targetView) {
+        mLoadingStateView = new LoadingStateView(this);
+
+        if(targetView == null){
+            mLoadingStateView.addSuccessView(layoutView);
+            ViewGroup.LayoutParams layoutParams = layoutView.getLayoutParams();
+            mLoadingStateView.setLayoutParams(layoutParams);
+
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+            layoutView.setLayoutParams(params);
+            return mLoadingStateView;
+        }else{
+            ViewGroup parent = (ViewGroup)targetView.getParent();
+            if(parent != null){
+                int index = parent.indexOfChild(targetView);
+                parent.removeView(targetView);
+                mLoadingStateView.addSuccessView(targetView);
+                ViewGroup.LayoutParams targetParams = targetView.getLayoutParams();
+                parent.addView(mLoadingStateView,index,targetParams);
+
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
+                targetView.setLayoutParams(params);
+                return layoutView;
+            }else{
+                throw new IllegalArgumentException("targetView must have a parent view");
+            }
+        }
+    }
+
+    public void updateViewState(int state){
+        if(mLoadingStateView != null){
+            mLoadingStateView.updateState(state);
+        }
+    }
+
+    protected View onBeforeSetContentLayout(View contentView) {
+        return contentView;
+    }
 
     protected int getLayoutId() {
         return 0;
     }
 
-    protected View getLayoutView(){
-        if(getLayoutId()!=0){
-            return mInflater.inflate(getLayoutId(),null);
+    protected View getLayoutView() {
+        if (getLayoutId() != 0) {
+            return mInflater.inflate(getLayoutId(), null);
         }
-        
         return null;
     }
 
@@ -75,7 +127,11 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     }
 
 
-    protected void init(Bundle savedInstanceState) {}
+    /**
+     * @param savedInstanceState activity被后台杀死，后恢复进行调用
+     */
+    protected void restoreInit(Bundle savedInstanceState) {
+    }
 
     @Override
     protected void onPause() {
@@ -136,6 +192,17 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
         }
     }
 
-    public void initView(){}
-    public void initData(){}
+    /**
+     * @return 返回是否需要 添加加载的4种状态
+     */
+    public final void setLoadingStateEnable(boolean isAddLoadingState, View targetView){
+        mIsAddLoadingState = isAddLoadingState;
+        mTargetView = targetView;
+    }
+
+    public void initView() {
+    }
+
+    public void initData() {
+    }
 }
