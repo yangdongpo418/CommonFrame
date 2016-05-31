@@ -95,9 +95,9 @@ public class MainActivity extends ToolBarActivity {
 
     @Override
     protected View onBeforeSetContentLayout(View contentView) {
-        setStatusBarMode(true);
-        View view = super.onBeforeSetContentLayout(contentView);
+        setStatusBarMode(false);
         setLoadingStateEnable(true,contentView);
+        View view = super.onBeforeSetContentLayout(contentView);
         return view;
     }
 }

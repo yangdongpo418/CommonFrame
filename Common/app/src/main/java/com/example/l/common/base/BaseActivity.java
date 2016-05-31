@@ -30,7 +30,9 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     protected LayoutInflater mInflater;
     private LoadingStateView mLoadingStateView;
     private boolean mIsAddLoadingState = false;
-    private View mTargetView;
+    private View mTargetLoadingStateView;
+    private boolean mIsPullRefreshEnable;
+    private View mTargetPullRefreshView;
 
     @Override
     protected void onDestroy() {
@@ -50,7 +52,7 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
 
         if (layoutView != null) {
             if(mIsAddLoadingState){
-                layoutView = addLoadingStateView(layoutView,mTargetView);
+                layoutView = addLoadingStateView(layoutView, mTargetLoadingStateView);
             }
             setContentView(layoutView);
         }else{
@@ -68,20 +70,20 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     /**
      *
      * @param targetView  用户要添加加载状态的view
-     * @param layoutView  整个布局的View
+     * @param contentView  整个布局的View
      * @return
      * 添加加载状态
      */
-    private View addLoadingStateView(View layoutView,View targetView) {
+    private View addLoadingStateView(View contentView,View targetView) {
         mLoadingStateView = new LoadingStateView(this);
 
         if(targetView == null){
-            mLoadingStateView.addSuccessView(layoutView);
-            ViewGroup.LayoutParams layoutParams = layoutView.getLayoutParams();
-            mLoadingStateView.setLayoutParams(layoutParams);
+            mLoadingStateView.addSuccessView(contentView);
+            ViewGroup.LayoutParams contentParams = contentView.getLayoutParams();
+            mLoadingStateView.setLayoutParams(contentParams);
 
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
-            layoutView.setLayoutParams(params);
+            contentView.setLayoutParams(params);
             return mLoadingStateView;
         }else{
             ViewGroup parent = (ViewGroup)targetView.getParent();
@@ -94,7 +96,7 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
 
                 FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT);
                 targetView.setLayoutParams(params);
-                return layoutView;
+                return contentView;
             }else{
                 throw new IllegalArgumentException("targetView must have a parent view");
             }
@@ -105,6 +107,17 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
         if(mLoadingStateView != null){
             mLoadingStateView.updateState(state);
         }
+    }
+
+
+    /**
+     * @param contentView
+     * @param targetView
+     * @return
+     */
+    private View addPullRefreshView(View contentView, View targetView){
+        return null;
+
     }
 
     protected View onBeforeSetContentLayout(View contentView) {
@@ -197,7 +210,12 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
      */
     public final void setLoadingStateEnable(boolean isAddLoadingState, View targetView){
         mIsAddLoadingState = isAddLoadingState;
-        mTargetView = targetView;
+        mTargetLoadingStateView = targetView;
+    }
+
+    public final void setPullRefreshEnable(boolean isPullRefreshEnable, View targetView){
+        mIsPullRefreshEnable = isPullRefreshEnable;
+        mTargetPullRefreshView = targetView;
     }
 
     public void initView() {

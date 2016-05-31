@@ -29,40 +29,41 @@ public class SlidingLayout extends ViewGroup {
     private int mTotaldx;
     private onStateChangeListener onStateChangeListener;
 
-    private boolean ismContentLoseFocus=false;
+    private boolean ismContentLoseFocus = false;
 
     public void setOnStateChangeListener(SlidingLayout.onStateChangeListener onStateChangeListener) {
         this.onStateChangeListener = onStateChangeListener;
     }
 
-    public static final int STATE_CLOSE=1;
-    public static final int STATE_OPEN=2;
-    public static final int STATE_OPENING=3;
-    private int state=STATE_CLOSE;
+    public static final int STATE_CLOSE = 1;
+    public static final int STATE_OPEN = 2;
+    public static final int STATE_OPENING = 3;
+    private int state = STATE_CLOSE;
 
-    public interface onStateChangeListener{
+    public interface onStateChangeListener {
         void onOpen();
+
         void onColse();
+
         void onOpening(float percent);
     }
 
     public SlidingLayout(Context context) {
-        this(context,null);
+        this(context, null);
     }
 
     public SlidingLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mMHelper = ViewDragHelper.create(this,new DragCallBack());
+        mMHelper = ViewDragHelper.create(this, new DragCallBack());
     }
 
     public SlidingLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mMHelper = ViewDragHelper.create(this,new DragCallBack());
+        mMHelper = ViewDragHelper.create(this, new DragCallBack());
     }
 
 
-
-    public class DragCallBack extends ViewDragHelper.Callback{
+    public class DragCallBack extends ViewDragHelper.Callback {
         @Override
         public boolean tryCaptureView(View child, int pointerId) {
             return true;
@@ -70,21 +71,20 @@ public class SlidingLayout extends ViewGroup {
 
         @Override
         public int clampViewPositionHorizontal(View child, int left, int dx) {
-            if(child==mContent){
+            if (child == mContent) {
                 return reCorrectPosition(left);
-            }else{
+            } else {
                 return reCorrectMenuPosition(left);
             }
-
         }
 
         private int reCorrectMenuPosition(int left) {
             //[-width,-width+mRange]
-            if(left<-mMenuWidth){
-                left=-mMenuWidth;
+            if (left < -mMenuWidth) {
+                left = -mMenuWidth;
             }
-            if(left>mRange-mMenuWidth){
-                left=mRange-mMenuWidth;
+            if (left > mRange - mMenuWidth) {
+                left = mRange - mMenuWidth;
             }
             return left;
         }
@@ -96,106 +96,103 @@ public class SlidingLayout extends ViewGroup {
 
         @Override
         public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
-            if(dx==0){
+            if (dx == 0) {
                 return;
             }
-            state=STATE_OPENING;
-            if(changedView==mContent){
+            state = STATE_OPENING;
+            if (changedView == mContent) {
                 mMenu.offsetLeftAndRight(dx);
                 invalidate();
             }
 
-            if(changedView==mMenu){
+            if (changedView == mMenu) {
                 mContent.offsetLeftAndRight(dx);
                 invalidate();
             }
 
-            mTotaldx+=dx;
-            float percent=mTotaldx*1.0f/mRange;
-            if(onStateChangeListener!=null){
+            mTotaldx += dx;
+            float percent = mTotaldx * 1.0f / mRange;
+            if (onStateChangeListener != null) {
                 onStateChangeListener.onOpening(percent);
             }
 
             //[0,1]
-            mContent.setScaleX(1f-0.2f*percent);//[1,0.8]
-            mContent.setScaleY(1f-0.2f*percent);//[1,0.8]
+            mContent.setScaleX(1f - 0.2f * percent);//[1,0.8]
+            mContent.setScaleY(1f - 0.2f * percent);//[1,0.8]
             //mContent.setAlpha(1f-0.2f*percent);
 
 
             //[0.6,1]
-            mMenu.setScaleX(0.8f+0.2f*percent);//[0.6,1]
-            mMenu.setScaleY(0.8f+0.2f*percent);//[0.6,1]
-            mMenu.setAlpha(0.8f+0.2f*percent);
+            mMenu.setScaleX(0.8f + 0.2f * percent);//[0.6,1]
+            mMenu.setScaleY(0.8f + 0.2f * percent);//[0.6,1]
+            mMenu.setAlpha(0.8f + 0.2f * percent);
 
-            float tranX=(mMenuWidth*0.2f)*percent;
+            float tranX = (mMenuWidth * 0.2f) * percent;
 
-            mMenu.setTranslationX(tranX/2);
+            mMenu.setTranslationX(tranX / 2);
 
 
         }
 
         @Override
         public void onViewReleased(View releasedChild, float xvel, float yvel) {
-                int left = mContent.getLeft();
+            int left = mContent.getLeft();
 
-                if(left<middleLine&&xvel<=0){
-                    close(true);
-                }else if(xvel<0){
-                    close(true);
-                }else{
-                    open();
-                }
-
+            if (left < middleLine && xvel <= 0) {
+                close(true);
+            } else if (xvel < 0) {
+                close(true);
+            } else {
+                open();
+            }
         }
     }
 
 
-        private int reCorrectPosition(int left) {
-            if(left<0){
-                left=0;
-            }
-            if(left>mRange){
-                left=mRange;
-            }
-            return left;
+    private int reCorrectPosition(int left) {
+        if (left < 0) {
+            left = 0;
         }
-
-
+        if (left > mRange) {
+            left = mRange;
+        }
+        return left;
+    }
 
 
     public void close(boolean smooth) {
-        if(smooth){
-            if(mMHelper.smoothSlideViewTo(mContent,0,0)&&mMHelper.smoothSlideViewTo(mMenu,-mMenuWidth,0)){
+        if (smooth) {
+            if (mMHelper.smoothSlideViewTo(mContent, 0, 0) && mMHelper.smoothSlideViewTo(mMenu, -mMenuWidth, 0)) {
                 invalidate();
             }
-        }else{
-            mContent.layout(0,0,mContentWidth,mContentHeight);
+        } else {
+            mContent.layout(0, 0, mContentWidth, mContentHeight);
             mContent.requestLayout();
         }
-        state=STATE_CLOSE;
+        state = STATE_CLOSE;
     }
 
     public void open() {
-        if(mMHelper.smoothSlideViewTo(mContent,mRange,0)&&mMHelper.smoothSlideViewTo(mMenu,mRange-mMenuWidth,0)){
+        if (mMHelper.smoothSlideViewTo(mContent, mRange, 0) && mMHelper.smoothSlideViewTo(mMenu, mRange - mMenuWidth, 0)) {
             invalidate();
         }
     }
 
     @Override
     public void computeScroll() {
-        if(mMHelper.continueSettling(true)){
+        if (mMHelper.continueSettling(true)) {
             invalidate();
-        }else{
+        } else {
             int left = mContent.getLeft();
-            if(left==0&&state==STATE_OPENING){
-                state=STATE_CLOSE;
-                if(onStateChangeListener!=null){
+            if (left == 0 && state == STATE_OPENING) {
+                state = STATE_CLOSE;
+                if (onStateChangeListener != null) {
                     onStateChangeListener.onColse();
                     mContent.setIntercepted(false);
                 }
-            }else if(left==mRange&&state==STATE_OPENING){
-                state=STATE_OPEN;
-                if(onStateChangeListener!=null){
+            } else if (left == mRange && state == STATE_OPENING) {
+                state = STATE_OPEN;
+                if (onStateChangeListener != null) {
                     onStateChangeListener.onOpen();
                     mContent.setIntercepted(true);
                 }
@@ -212,21 +209,20 @@ public class SlidingLayout extends ViewGroup {
         mMenuHeight = mMenu.getMeasuredHeight();
 
 
-
         mRange = mMenuWidth;
-        middleLine= (int) (mRange*0.5f);
+        middleLine = (int) (mRange * 0.5f);
 
         mContent = (ContentLinearLayout) getChildAt(1);
         mContentWidth = mContent.getMeasuredWidth();
         mContentHeight = mContent.getMeasuredHeight();
 
 
-        if(state==STATE_CLOSE){
-            mMenu.layout(l-mMenuWidth,t,l,t+ mMenuHeight);
-            mContent.layout(l,t,l+ mContentWidth,t+ mContentHeight);
-        }else if(state==STATE_OPEN){
-            mMenu.layout(l-mMenuWidth+mRange,t,l+mRange,t+ mMenuHeight);
-            mContent.layout(l+mRange,t,l+ mContentWidth+mRange,t+ mContentHeight);
+        if (state == STATE_CLOSE) {
+            mMenu.layout(l - mMenuWidth, t, l, t + mMenuHeight);
+            mContent.layout(l, t, l + mContentWidth, t + mContentHeight);
+        } else if (state == STATE_OPEN) {
+            mMenu.layout(l - mMenuWidth + mRange, t, l + mRange, t + mMenuHeight);
+            mContent.layout(l + mRange, t, l + mContentWidth + mRange, t + mContentHeight);
         }
     }
 
@@ -236,7 +232,7 @@ public class SlidingLayout extends ViewGroup {
         mParentHeight = MeasureSpec.getSize(heightMeasureSpec);
 
         int childCount = getChildCount();
-        for (int i = 0; i <childCount; i++) {
+        for (int i = 0; i < childCount; i++) {
             View child = getChildAt(i);
             LayoutParams layoutParams = child.getLayoutParams();
 
@@ -245,44 +241,44 @@ public class SlidingLayout extends ViewGroup {
 
             int childWidth = 0;
             int childHeight = 0;
-            if(layoutParams.height>0){
+            if (layoutParams.height > 0) {
                 childHeightMode = MeasureSpec.EXACTLY;
-                childHeight =layoutParams.height;
-            }else if (layoutParams.height == LayoutParams.WRAP_CONTENT) {
+                childHeight = layoutParams.height;
+            } else if (layoutParams.height == LayoutParams.WRAP_CONTENT) {
                 childHeightMode = MeasureSpec.AT_MOST;
-                childHeight =mParentHeight;
+                childHeight = mParentHeight;
             } else if (layoutParams.height == LayoutParams.MATCH_PARENT) {
                 childHeightMode = MeasureSpec.EXACTLY;
-                childHeight =mParentHeight;
-            }else{
+                childHeight = mParentHeight;
+            } else {
                 throw new RuntimeException("子view的大小未知");
             }
 
 
-            if(layoutParams.width>0){
+            if (layoutParams.width > 0) {
                 childWidthMode = MeasureSpec.EXACTLY;
-                childWidth =layoutParams.width;
-            }else if (layoutParams.width == LayoutParams.WRAP_CONTENT) {
+                childWidth = layoutParams.width;
+            } else if (layoutParams.width == LayoutParams.WRAP_CONTENT) {
                 childWidthMode = MeasureSpec.AT_MOST;
-                childWidth =mParentWidth;
+                childWidth = mParentWidth;
             } else if (layoutParams.width == LayoutParams.MATCH_PARENT) {
                 childWidthMode = MeasureSpec.EXACTLY;
-                childWidth =mParentWidth;
-            }else{
+                childWidth = mParentWidth;
+            } else {
                 throw new RuntimeException("子view的大小未知");
             }
 
-            int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(childWidth,childWidthMode);
-            int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(childHeight,childHeightMode);
-            child.measure(childWidthMeasureSpec,childHeightMeasureSpec);
+            int childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(childWidth, childWidthMode);
+            int childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(childHeight, childHeightMode);
+            child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
         }
 
-        setMeasuredDimension(mParentWidth,mParentHeight);
+        setMeasuredDimension(mParentWidth, mParentHeight);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-       return mMHelper.shouldInterceptTouchEvent(ev);
+        return mMHelper.shouldInterceptTouchEvent(ev);
 
     }
 
