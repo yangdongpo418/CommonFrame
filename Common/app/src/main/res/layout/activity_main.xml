@@ -1,40 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.example.l.common.widget.PullReFreshView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main_pull_refresh"
     tools:context=".activity.MainActivity">
-    <LinearLayout
-        android:orientation="vertical"
+
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <ImageView
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:id="@+id/main_iv"
-            android:src="@mipmap/photo"
-            android:layout_height="wrap_content"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/request_net"
-            android:text="点击请求网络"/>
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/request_image"
-            android:layout_alignParentRight="true"
-            android:text="点击请求图片"
-            />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <com.example.l.common.ui.NetImageView
-            android:layout_width="200dp"
-            android:layout_height="2000dp"
-            app:viewAspectRatio="2"
-            android:layout_centerInParent="true"
-            android:id="@+id/drawee_image"
-            />
-    </LinearLayout>
+            <ImageView
+                android:id="@+id/main_iv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/photo"/>
+
+            <Button
+                android:id="@+id/request_net"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="点击请求网络"/>
+
+            <Button
+                android:id="@+id/request_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:text="点击请求图片"
+                />
+
+            <com.example.l.common.ui.NetImageView
+                android:id="@+id/drawee_image"
+                android:layout_width="200dp"
+                android:layout_height="2000dp"
+                android:layout_centerInParent="true"
+                app:viewAspectRatio="2"
+                />
+        </LinearLayout>
 
 
-</ScrollView>
+    </ScrollView>
+</com.example.l.common.widget.PullReFreshView>

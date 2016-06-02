@@ -15,6 +15,7 @@ import com.example.l.common.ui.dialog.DialogControl;
 import com.example.l.common.utils.DialogHelp;
 import com.example.l.common.utils.WindowUtils;
 import com.example.l.common.widget.LoadingStateView;
+import com.example.l.common.widget.PullReFreshView;
 
 import butterknife.ButterKnife;
 
@@ -116,7 +117,23 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
      * @return
      */
     private View addPullRefreshView(View contentView, View targetView){
-        return null;
+        PullReFreshView pullRefreshView = new PullReFreshView(this);
+        ViewGroup parent = (ViewGroup) targetView.getParent();
+        if(parent != null){
+            int index = parent.indexOfChild(targetView);
+            parent.removeView(targetView);
+            pullRefreshView.setContentView(targetView);
+
+            ViewGroup.LayoutParams layoutParams = targetView.getLayoutParams();
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            targetView.setLayoutParams(params);
+
+            parent.addView(pullRefreshView,index,layoutParams);
+        }else{
+            throw new IllegalArgumentException("targetView must have a parent view");
+        }
+
+        return contentView;
 
     }
 
@@ -206,13 +223,19 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     }
 
     /**
-     * @return 返回是否需要 添加加载的4种状态
+     * @return 返回是否需要 添加加载的4种状态，如果targetView有parentView 就移除 用FrameLayout包一层，然后再添加
+     * 如果没有parentView 则直接进行包一层
      */
     public final void setLoadingStateEnable(boolean isAddLoadingState, View targetView){
         mIsAddLoadingState = isAddLoadingState;
         mTargetLoadingStateView = targetView;
     }
 
+    /**
+     * @param isPullRefreshEnable
+     * @param targetView  下拉刷新比较特殊，如果targetView为ListView，RecycleView，ScrollView等带滚动条的页面
+     *                    必须将下拉刷新直接包在外层，否侧滑动失效
+     */
     public final void setPullRefreshEnable(boolean isPullRefreshEnable, View targetView){
         mIsPullRefreshEnable = isPullRefreshEnable;
         mTargetPullRefreshView = targetView;

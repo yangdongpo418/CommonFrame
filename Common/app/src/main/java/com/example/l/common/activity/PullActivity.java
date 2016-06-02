@@ -1,8 +1,10 @@
 package com.example.l.common.activity;
 
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -37,13 +39,30 @@ public class PullActivity extends AppCompatActivity {
             list.add(i+"");
         }
 
-        View inflate = getLayoutInflater().inflate(R.layout.listview, mPullReFreshView, false);
-        ListView listView = (ListView) inflate.findViewById(R.id.list_view);
+        ListView listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,list));
-        mPullReFreshView.setContentView(inflate);
+        mPullReFreshView.setPullRefreshEnable(true);
+        mPullReFreshView.setOnRefreshListener(new PullReFreshView.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.d("Log_text", "PullActivity+onRefresh+下拉刷新了");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemClock.sleep(3000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                mPullReFreshView.complete();
+                            }
+                        });
+                    }
+                }).start();
+            }
+        });
     }
 
     public void refresh(View view){
-        mPullReFreshView.close();
+
     }
 }

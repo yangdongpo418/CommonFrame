@@ -1,7 +1,9 @@
 package com.example.l.common.activity;
 
 import android.net.Uri;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,6 +18,7 @@ import com.example.l.common.base.ToolBarActivity;
 import com.example.l.common.bean.Weather;
 import com.example.l.common.constants.Constants;
 import com.example.l.common.utils.TLog;
+import com.example.l.common.widget.PullReFreshView;
 import com.facebook.drawee.view.SimpleDraweeView;
 
 import butterknife.Bind;
@@ -32,6 +35,9 @@ public class MainActivity extends ToolBarActivity {
     @Nullable@Bind(R.id.main_iv)
     ImageView main_iv;
 
+    @Bind(R.id.main_pull_refresh)
+    PullReFreshView pullRefresh;
+
     @Override
     protected int getLayoutId() {
         return R.layout.activity_main;
@@ -42,6 +48,25 @@ public class MainActivity extends ToolBarActivity {
         super.initView();
         setActionBarTitle("");
         setActionBarTitleColor(R.color.white);
+
+        pullRefresh.setOnRefreshListener(new PullReFreshView.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                Log.d("Log_text", "PullActivity+onRefresh+下拉刷新了");
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        SystemClock.sleep(10000);
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                            }
+                        });
+                    }
+                }).start();
+            }
+        });
     }
 
     @Override

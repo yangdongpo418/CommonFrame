@@ -5,9 +5,15 @@
               android:layout_height="match_parent">
     <com.example.l.common.widget.PullReFreshView
         android:layout_width="match_parent"
+        android:background="#0f0"
         android:id="@+id/pull_refresh"
-        android:layout_height="match_parent">
-
+        android:layout_height="500dp">
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:background="#ff9"
+            android:id="@+id/list_view" >
+        </ListView>
     </com.example.l.common.widget.PullReFreshView>
 
     <Button
