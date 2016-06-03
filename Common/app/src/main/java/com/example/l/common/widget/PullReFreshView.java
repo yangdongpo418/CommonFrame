@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.widget.Scroller;
 import android.widget.TextView;
@@ -24,10 +23,8 @@ import butterknife.ButterKnife;
  */
 public class PullReFreshView extends ViewGroup {
 
-    private int mTouchSlop;
     private View mContent;
     private ViewGroup mPullView;
-    private static final int INVALID_POINTER = -1;
 
     private int mParentHeight;
     private int mParentWidth;
@@ -39,11 +36,14 @@ public class PullReFreshView extends ViewGroup {
     public static final int STATE_REFRESH = 3;
     public static final int VISIBLE = 4;
     public static final int UNVISIBLE = 5;
-    private int state = STATE_CLOSE;
-    private int visible = UNVISIBLE;
+    private int mPullState = STATE_CLOSE;
+    private int mPullVisible = UNVISIBLE;
     private int mPullHeight;
-    private int mRange;
-    private int mMiddleLine;
+    private int mLoadMoreState = STATE_CLOSE;
+    private int mLoadMoreVisible = UNVISIBLE;
+    private int mLoadMoreHeight;
+    private int mLoadMoreWidth;
+
     private int mPullWidth;
     /**
      * 这个标志位很关键，因为view.offsetTopAndBottom api不会调用父类的onlayout方法，如果在view的offsetTopAndBottom方法执行过程
@@ -64,6 +64,8 @@ public class PullReFreshView extends ViewGroup {
     private float mStartY = -1;
     private View mDragView;
     private boolean isAnimationStart = false;
+    private boolean mEnableLoadMore;
+    private ViewGroup mLoadMore;
 
     public PullReFreshView(Context context) {
         this(context, null);
@@ -74,17 +76,17 @@ public class PullReFreshView extends ViewGroup {
         super(context, attrs);
         mContext = context;
         mPullView = (ViewGroup) LayoutInflater.from(context).inflate(R.layout.view_pull_refresh, this, true);
+        mLoadMore = (ViewGroup) LayoutInflater.from(context).inflate(R.layout.view_load_more, this, true);
         ButterKnife.bind(this);
-        mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         mScroller = new Scroller(mContext);
     }
 
     public void onViewReleased(View releasedChild, float xvel, float yvel) {
         if (releasedChild == mContent) {
             int top = releasedChild.getTop();
-            if (top >= mPullHeight && (state == STATE_OPEN || state == STATE_REFRESH)) {
+            if (top >= mPullHeight && (mPullState == STATE_OPEN || mPullState == STATE_REFRESH)) {
                 open();
-            } else if (top < mPullHeight && state == STATE_CLOSE) {
+            } else if (top < mPullHeight && mPullState == STATE_CLOSE) {
                 complete();
             }
         }
@@ -103,20 +105,20 @@ public class PullReFreshView extends ViewGroup {
             }
 
             if (top + dy > 0) {
-                visible = VISIBLE;
+                mPullVisible = VISIBLE;
             } else {
-                visible = UNVISIBLE;
+                mPullVisible = UNVISIBLE;
             }
 
             mPullView.offsetTopAndBottom(dy);
             mContent.offsetTopAndBottom(dy);
-            if (top > mPullHeight && top + dy <= mPullHeight && state == STATE_OPEN) {
+            if (top > mPullHeight && top + dy <= mPullHeight && mPullState == STATE_OPEN) {
                 onPullBackUIChange();
-                state = STATE_CLOSE;
+                mPullState = STATE_CLOSE;
                 isCalledByRevisedUI = true;
-            } else if (top <= mPullHeight && top + dy >= mPullHeight && state == STATE_CLOSE) {
+            } else if (top <= mPullHeight && top + dy >= mPullHeight && mPullState == STATE_CLOSE) {
                 onPullOverUIChange();
-                state = STATE_OPEN;
+                mPullState = STATE_OPEN;
                 isCalledByRevisedUI = true;
             } else {
                 invalidate();
@@ -130,10 +132,10 @@ public class PullReFreshView extends ViewGroup {
             invalidate();
         }
 
-        if (state == STATE_OPEN) {
-            state = STATE_REFRESH;
+        if (mPullState == STATE_OPEN) {
+            mPullState = STATE_REFRESH;
             onRrefeshUIChange();
-        } else if (state == STATE_REFRESH) {
+        } else if (mPullState == STATE_REFRESH) {
             //正在刷新 不进行重复刷新 编写代码请慎重
         }
     }
@@ -142,7 +144,7 @@ public class PullReFreshView extends ViewGroup {
         if (smoothSlideViewTo(mPullView, 0, -mPullHeight) && smoothSlideViewTo(mContent, 0, 0)) {
             invalidate();
         }
-        state = STATE_CLOSE;
+        mPullState = STATE_CLOSE;
         onPullBackUIChange();
     }
 
@@ -186,7 +188,7 @@ public class PullReFreshView extends ViewGroup {
                 float offset = moveY - mStartY;
 
                 //1. 初始化页面下拉刷新，scrollView不动，scrollView可以向上滑动，点击正常  需要下发的事件，
-                if (canChildScrollUp(mContent) && visible == UNVISIBLE) {
+                if (canChildScrollUp(mContent) && mPullVisible == UNVISIBLE) {
                     Log.d("Log_text", "PullReFreshView+dispatchTouchEvent+分给子child");
                     //可以向上或者向下滑动，点击正常，完全发送
                     adjustLocationForChild(ev);
@@ -195,14 +197,14 @@ public class PullReFreshView extends ViewGroup {
                     Log.d("Log_text", "PullReFreshView+dispatchTouchEvent 内容可以上下滑动");
                 } else {
                     //不可以滑动，点击正常，又分为两种，第一种是不刷新状态，另外一种是刷新状态
-                    if (state == STATE_REFRESH) {
+                    if (mPullState == STATE_REFRESH) {
                         //比较复杂
-                        if (visible == VISIBLE) {
+                        if (mPullVisible == VISIBLE) {
                             //将事件分发给自己
                             Log.d("Log_text", "PullReFreshView+dispatchTouchEven 正在刷新状态 标题可见状态");
                             onDragViewChange(this, ev);
                             onTouchEvent(ev);
-                        } else if (visible == UNVISIBLE) {
+                        } else if (mPullVisible == UNVISIBLE) {
                             //为两种情况，向上还是向下
                             if (offset > 0) {
                                 onDragViewChange(this, ev);
@@ -217,13 +219,13 @@ public class PullReFreshView extends ViewGroup {
                         } else {
                             Log.d("Log_text", "PullReFreshView+dispatchTouchEvent有问题分发");
                         }
-                    } else if (state == STATE_CLOSE) {
+                    } else if (mPullState == STATE_CLOSE) {
                         //也分为两种，第一种向上滑动，分给mContent，下拉刷新分给自己
-                        if (offset > 0 ||(offset < 0 && visible == VISIBLE)) {
+                        if (offset > 0 ||(offset < 0 && mPullVisible == VISIBLE)) {
                             Log.d("Log_text", "PullReFreshView+dispatchTouchEvent标题消失状态，且向下滑");
                             onDragViewChange(this, ev);
                             onTouchEvent(ev);
-                        } else if (offset < 0 && visible == UNVISIBLE) {
+                        } else if (offset < 0 && mPullVisible == UNVISIBLE) {
                             Log.d("Log_text", "PullReFreshView+dispatchTouchEvent标题消失状态，且向上滑");
                             adjustLocationForChild(ev);
                             onDragViewChange(mContent, ev);
@@ -350,7 +352,7 @@ public class PullReFreshView extends ViewGroup {
                 maxChildWidth = actualChildWidth;
             }
 
-            if (i == 1) {
+            if (i == 2) {
                 totalChildHeight = child.getMeasuredHeight();
             }
         }
@@ -387,25 +389,25 @@ public class PullReFreshView extends ViewGroup {
         mPullWidth = mPullView.getMeasuredWidth();
         mPullHeight = mPullView.getMeasuredHeight();
 
+        mContent = getChildAt(2);
 
-        mRange = mPullHeight;
-        mMiddleLine = (int) (mRange * 0.5f);
-
-        mContent = getChildAt(1);
+        if(mContent == null){
+            throw new IllegalArgumentException("PullReFreshView must have a child");
+        }
         mContentWidth = mContent.getMeasuredWidth();
         mContentHeight = mContent.getMeasuredHeight();
 
         if (isCalledByRevisedUI) {
             mPullView.layout(l, t, l + mPullWidth, t + mPullHeight);
-            mContent.layout(l, t + mRange, l + mContentWidth, t + mContentHeight + mRange);
+            mContent.layout(l, t + mPullHeight, l + mContentWidth, t + mContentHeight + mPullHeight);
             isCalledByRevisedUI = false;
         } else {
-            if (state == STATE_CLOSE) {
+            if (mPullState == STATE_CLOSE) {
                 mPullView.layout(l, t - mPullHeight, l + mPullWidth, t);
                 mContent.layout(l, t, l + mContentWidth, t + mContentHeight);
-            } else if (state == STATE_OPEN) {
+            } else if (mPullState == STATE_OPEN) {
                 mPullView.layout(l, t, l + mPullWidth, t + mPullHeight);
-                mContent.layout(l, t + mRange, l + mContentWidth, t + mContentHeight + mRange);
+                mContent.layout(l, t + mPullHeight, l + mContentWidth, t + mContentHeight + mPullHeight);
             }
         }
 
@@ -466,4 +468,10 @@ public class PullReFreshView extends ViewGroup {
     public void setPullRefreshEnable(boolean enablePullRefresh) {
         mEnablePullRefresh = enablePullRefresh;
     }
+
+    public void setLoadMoreEnable(boolean enableLoadMore){
+        mEnableLoadMore = enableLoadMore;
+    }
+
+
 }
