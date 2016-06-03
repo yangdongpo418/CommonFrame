@@ -15,7 +15,6 @@ import com.example.l.common.ui.dialog.DialogControl;
 import com.example.l.common.utils.DialogHelp;
 import com.example.l.common.utils.WindowUtils;
 import com.example.l.common.widget.LoadingStateView;
-import com.example.l.common.widget.PullReFreshView;
 
 import butterknife.ButterKnife;
 
@@ -108,33 +107,6 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
         if(mLoadingStateView != null){
             mLoadingStateView.updateState(state);
         }
-    }
-
-
-    /**
-     * @param contentView
-     * @param targetView
-     * @return
-     */
-    private View addPullRefreshView(View contentView, View targetView){
-        PullReFreshView pullRefreshView = new PullReFreshView(this);
-        ViewGroup parent = (ViewGroup) targetView.getParent();
-        if(parent != null){
-            int index = parent.indexOfChild(targetView);
-            parent.removeView(targetView);
-            pullRefreshView.setContentView(targetView);
-
-            ViewGroup.LayoutParams layoutParams = targetView.getLayoutParams();
-            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            targetView.setLayoutParams(params);
-
-            parent.addView(pullRefreshView,index,layoutParams);
-        }else{
-            throw new IllegalArgumentException("targetView must have a parent view");
-        }
-
-        return contentView;
-
     }
 
     protected View onBeforeSetContentLayout(View contentView) {

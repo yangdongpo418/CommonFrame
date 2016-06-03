@@ -9,7 +9,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.Scroller;
 import android.widget.TextView;
 
@@ -38,7 +37,10 @@ public class PullReFreshView extends ViewGroup {
     public static final int STATE_CLOSE = 1;
     public static final int STATE_OPEN = 2;
     public static final int STATE_REFRESH = 3;
+    public static final int VISIBLE = 4;
+    public static final int UNVISIBLE = 5;
     private int state = STATE_CLOSE;
+    private int visible = UNVISIBLE;
     private int mPullHeight;
     private int mRange;
     private int mMiddleLine;
@@ -54,13 +56,14 @@ public class PullReFreshView extends ViewGroup {
     @Bind(R.id.view_tv_pull_refresh)
     TextView mTvRefresh;
 
-    private boolean mIsBeingDragged = false;
     private float mInitialMotionY;
     private Context mContext;
     private Scroller mScroller;
     private boolean mEnablePullRefresh = true;
     private OnRefreshListener mListener;
-    private int mStartScrollY;
+    private float mStartY = -1;
+    private View mDragView;
+    private boolean isAnimationStart = false;
 
     public PullReFreshView(Context context) {
         this(context, null);
@@ -76,12 +79,6 @@ public class PullReFreshView extends ViewGroup {
         mScroller = new Scroller(mContext);
     }
 
-    public void setContentView(View contentView) {
-        addView(contentView, 1);
-        mContent = contentView;
-    }
-
-
     public void onViewReleased(View releasedChild, float xvel, float yvel) {
         if (releasedChild == mContent) {
             int top = releasedChild.getTop();
@@ -96,6 +93,21 @@ public class PullReFreshView extends ViewGroup {
 
     public void onViewPositionChanged(View changedView, int left, int top, int dx, int dy) {
         if (changedView == mContent) {
+            if (dy < 0) {
+                dy = dy * 2;
+                if (top + dy < 0) {
+                    dy = -top;
+                }
+            } else {
+                dy = dy / 2;
+            }
+
+            if (top + dy > 0) {
+                visible = VISIBLE;
+            } else {
+                visible = UNVISIBLE;
+            }
+
             mPullView.offsetTopAndBottom(dy);
             mContent.offsetTopAndBottom(dy);
             if (top > mPullHeight && top + dy <= mPullHeight && state == STATE_OPEN) {
@@ -126,6 +138,14 @@ public class PullReFreshView extends ViewGroup {
         }
     }
 
+    public void complete() {
+        if (smoothSlideViewTo(mPullView, 0, -mPullHeight) && smoothSlideViewTo(mContent, 0, 0)) {
+            invalidate();
+        }
+        state = STATE_CLOSE;
+        onPullBackUIChange();
+    }
+
     private boolean smoothSlideViewTo(View target, int finalLeft, int finalTop, int duration) {
         int startLeft = target.getLeft();
         int startTop = target.getTop();
@@ -145,74 +165,115 @@ public class PullReFreshView extends ViewGroup {
     private boolean smoothSlideViewTo(View target, int finalLeft, int finalTop) {
         int startTop = target.getTop();
         int dy = finalTop - startTop;
-        return smoothSlideViewTo(target, finalLeft, finalTop, Math.abs(dy) * 2);
-    }
-
-
-    public void complete() {
-        if (smoothSlideViewTo(mPullView, 0, -mPullHeight) && smoothSlideViewTo(mContent, 0, 0)) {
-            invalidate();
-        }
-        state = STATE_CLOSE;
-        onPullBackUIChange();
-    }
-
-    public void closeAnimationImm() {
-        if (smoothSlideViewTo(mPullView, 0, -mPullHeight, 0) && smoothSlideViewTo(mContent, 0, 0, 0)) {
-            invalidate();
-        }
-    }
-
-    /**
-     * @param ev 当用户向下拖动，且里面的可滑动的控件不能再向下滑的时候，进行拦截
-     * @return
-     */
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        Log.d("Log_text", "PullReFreshView+onInterceptTouchEvent");
-        if (canChildScrollUp(mContent)) {
-            return false;
-        }
-
-        switch (ev.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                mIsBeingDragged = false;
-                final float initialMotionY = ev.getY();
-                if (initialMotionY == -1) {
-                    return false;
-                }
-                mInitialMotionY = initialMotionY;
-
-            case MotionEvent.ACTION_MOVE:
-                final float y = ev.getY();
-                if (y == -1) {
-                    return false;
-                }
-                final float yDiff = y - mInitialMotionY;
-
-                if (yDiff > mTouchSlop && !mIsBeingDragged && mEnablePullRefresh) {
-                    mIsBeingDragged = true;
-                }
-        }
-        return mIsBeingDragged;
+        return smoothSlideViewTo(target, finalLeft, finalTop, Math.abs(dy) * 1);
     }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        float startX = ev.getX();
-        float startY = ev.getY();
+        if(isAnimationStart){
+            return true;
+        }
 
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mStartY = ev.getY();
+                mDragView = null;
+                onTouchEvent(ev);
+                mContent.dispatchTouchEvent(adjustLocationForChild(ev));
+                break;
+            case MotionEvent.ACTION_MOVE:
+                float moveY = ev.getY();
+                float offset = moveY - mStartY;
 
+                //1. 初始化页面下拉刷新，scrollView不动，scrollView可以向上滑动，点击正常  需要下发的事件，
+                if (canChildScrollUp(mContent) && visible == UNVISIBLE) {
+                    Log.d("Log_text", "PullReFreshView+dispatchTouchEvent+分给子child");
+                    //可以向上或者向下滑动，点击正常，完全发送
+                    adjustLocationForChild(ev);
+                    onDragViewChange(mContent, ev);
+                    mContent.dispatchTouchEvent(ev);
+                    Log.d("Log_text", "PullReFreshView+dispatchTouchEvent 内容可以上下滑动");
+                } else {
+                    //不可以滑动，点击正常，又分为两种，第一种是不刷新状态，另外一种是刷新状态
+                    if (state == STATE_REFRESH) {
+                        //比较复杂
+                        if (visible == VISIBLE) {
+                            //将事件分发给自己
+                            Log.d("Log_text", "PullReFreshView+dispatchTouchEven 正在刷新状态 标题可见状态");
+                            onDragViewChange(this, ev);
+                            onTouchEvent(ev);
+                        } else if (visible == UNVISIBLE) {
+                            //为两种情况，向上还是向下
+                            if (offset > 0) {
+                                onDragViewChange(this, ev);
+                                Log.d("Log_text", "PullReFreshView+dispatchTouchEven 正在刷新状态 标题正好消失，且向下滑动");
+                                onTouchEvent(ev);
+                            } else if (offset < 0) {
+                                adjustLocationForChild(ev);
+                                Log.d("Log_text", "PullReFreshView+dispatchTouchEven 正在刷新状态 标题正好消失，且向上滑动");
+                                onDragViewChange(mContent, ev);
+                                mContent.dispatchTouchEvent(ev);
+                            }
+                        } else {
+                            Log.d("Log_text", "PullReFreshView+dispatchTouchEvent有问题分发");
+                        }
+                    } else if (state == STATE_CLOSE) {
+                        //也分为两种，第一种向上滑动，分给mContent，下拉刷新分给自己
+                        if (offset > 0 ||(offset < 0 && visible == VISIBLE)) {
+                            Log.d("Log_text", "PullReFreshView+dispatchTouchEvent标题消失状态，且向下滑");
+                            onDragViewChange(this, ev);
+                            onTouchEvent(ev);
+                        } else if (offset < 0 && visible == UNVISIBLE) {
+                            Log.d("Log_text", "PullReFreshView+dispatchTouchEvent标题消失状态，且向上滑");
+                            adjustLocationForChild(ev);
+                            onDragViewChange(mContent, ev);
+                            mContent.dispatchTouchEvent(ev);
+                        } else {
+                            Log.d("Log_text", "PullReFreshView+dispatchTouchEvent有问题分发");
+                        }
 
-
-        mContent.dispatchTouchEvent(ev);
-
+                    } else {
+                        Log.d("Log_text", "PullReFreshView+dispatchTouchEvent 下拉状态，标题可见");
+                        onDragViewChange(this, ev);
+                        onTouchEvent(ev);
+                    }
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                onTouchEvent(ev);
+                mContent.dispatchTouchEvent(adjustLocationForChild(ev));
+                break;
+        }
         return true;
+    }
+
+    private MotionEvent adjustLocationForChild(MotionEvent ev) {
+        int mContentTop = mContent.getTop();
+        float y = ev.getY();
+        float adjustY = y - mContentTop;
+        ev.setLocation(ev.getX(), adjustY);
+        return ev;
+    }
+
+    public void onDragViewChange(View newDragView, MotionEvent event) {
+        if (newDragView == mDragView) {
+            return;
+        }
+
+        if (mDragView == null) {
+            mDragView = newDragView;
+            return;
+        }
+        mDragView = newDragView;
+        event.setAction(MotionEvent.ACTION_DOWN);
+        newDragView.dispatchTouchEvent(event);
+
+        event.setAction(MotionEvent.ACTION_MOVE);
     }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        Log.d("Log_text", "PullReFreshView+onTouchEvent");
+        //Log.d("Log_text", "PullReFreshView+onTouchEvent");
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mInitialMotionY = event.getY();
@@ -225,6 +286,7 @@ public class PullReFreshView extends ViewGroup {
                 break;
             case MotionEvent.ACTION_UP:
                 onViewReleased(mContent, 0, 0);
+                mInitialMotionY = 0;
                 break;
         }
         return true;
@@ -352,6 +414,7 @@ public class PullReFreshView extends ViewGroup {
     @Override
     public void computeScroll() {
         if (mScroller.computeScrollOffset()) {
+            isAnimationStart = true;
             int currX = mScroller.getCurrX();
             int currY = mScroller.getCurrY();
             int mContentTop = mContent.getTop();
@@ -363,6 +426,8 @@ public class PullReFreshView extends ViewGroup {
             mPullView.offsetLeftAndRight(currX - mContentLeft);
 
             invalidate();
+        }else{
+            isAnimationStart = false;
         }
     }
 
@@ -383,36 +448,12 @@ public class PullReFreshView extends ViewGroup {
 
 
     public boolean canChildScrollUp(View Target) {
-        if (android.os.Build.VERSION.SDK_INT < 14) {
-            if (Target instanceof AbsListView) {
-                final AbsListView absListView = (AbsListView) Target;
-                return absListView.getChildCount() > 0
-                        && (absListView.getFirstVisiblePosition() > 0 || absListView.getChildAt(0)
-                        .getTop() < absListView.getPaddingTop());
-            } else {
-                return Target.getScrollY() > 0;
-            }
-        } else {
-            return ViewCompat.canScrollVertically(Target, -1);
-        }
+        return ViewCompat.canScrollVertically(Target, -1);
     }
 
-    public boolean childScrollUpWithin(View target, int distance) {
-        if (!canChildScrollUp(target) || distance <= 0) {
-            return false;
-        }
-
-        if (target instanceof AbsListView) {
-            final AbsListView absListView = (AbsListView) target;
-            //第一个child的高度比parentView的padding值小
-            int moveDistance = absListView.getChildAt(0)
-                    .getTop() - absListView.getPaddingTop();
-            return Math.abs(moveDistance) < distance;
-        } else {
-            return target.getScrollY() < distance;
-        }
+    public boolean canChildScrollDown(View Target) {
+        return ViewCompat.canScrollVertically(Target, 1);
     }
-
 
     public interface OnRefreshListener {
         void onRefresh();

@@ -76,6 +76,7 @@ public class MainActivity extends ToolBarActivity {
 
     @OnClick(R.id.request_net)
     public void request(View view){
+        showToast("请求网络",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
         setActionBarTitleColor(R.color.white);
         BackEndApi.weatherInfo(new RequestListener<Weather>() {
             @Override
@@ -101,6 +102,14 @@ public class MainActivity extends ToolBarActivity {
     public void loadImage(View view){
         Uri uri = Uri.parse("http://10.0.2.2:8080/manager/5.png");
         image.setImageURI(uri);
+        showToast("加载图片",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
+
+    }
+
+    @OnClick(R.id.complete)
+    public void finishRefresh(View view){
+        pullRefresh.complete();
+        showToast("举报点击",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
     }
 
     @Override
