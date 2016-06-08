@@ -24,4 +24,13 @@ public class BackEndApi {
         params.put("age",35);
         HttpUtils.getBean("http://10.0.2.2:8080/manager/volley.json",params,Weather.class,listener);
     }
+
+    /**
+     * 请求百度
+     */
+    public static void baiDu(RequestListener<String> listener){
+        HttpUtils.getString("http://www.baidu.com",listener);
+    }
+
+
 }

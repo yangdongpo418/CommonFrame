@@ -1,5 +1,7 @@
 package com.example.l.common.utils;
 
+import android.util.Log;
+
 import com.orhanobut.logger.Logger;
 
 public class TLog {
@@ -25,7 +27,7 @@ public class TLog {
 
 	public static final void i(String log) {
 		if (DEBUG)
-		Logger.i(log,DEBUG);
+		Log.i("Common",log);
 	}
 
 	public static final void i(String tag, String log) {

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.example.l.common.widget.PullReFreshView
+<com.example.l.common.widget.PullReFreshViewSimple
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:id="@+id/main_pull_refresh"
-    tools:context=".activity.MainActivity">
+    android:id="@+id/main_pull_refresh">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -17,11 +15,12 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/main_iv"
+            <fragment
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:src="@mipmap/photo"/>
+                android:layout_height="300dp"
+                android:id="@+id/location_map"
+                class="com.thirdparty.proxy.map.widget.MapFragment"
+                ></fragment>
 
             <Button
                 android:id="@+id/request_net"
@@ -44,6 +43,17 @@
                 android:id="@+id/complete"
                 />
 
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/location"
+                android:text="获取当前位置"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/location_address"
+                />
+
             <com.example.l.common.ui.NetImageView
                 android:id="@+id/drawee_image"
                 android:layout_width="200dp"
@@ -55,4 +65,4 @@
 
 
     </ScrollView>
-</com.example.l.common.widget.PullReFreshView>
+</com.example.l.common.widget.PullReFreshViewSimple>

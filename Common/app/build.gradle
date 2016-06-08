@@ -4,10 +4,27 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.1"
 
+    signingConfigs {
+        /**
+         * 设置你的keystore相关
+         * demo中只是一个示例，使用时请根据实际情况进行配置
+         */
+        debug {
+            //keystore中key的别名
+            keyAlias 'Alias'
+            //keystore中key的密码
+            keyPassword '123456'
+            //keystore的文件路径，可以使绝对路径也可以是相对路径
+            storeFile file('C:\\develop\\keystore\\formal.jks')
+            //keystore的密码
+            storePassword '123456'
+        }
+    }
+
     defaultConfig {
         applicationId "com.example.l.common"
         minSdkVersion 15
-        targetSdkVersion 23
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
     }
@@ -29,4 +46,5 @@ dependencies {
     compile project(':network')
     compile 'com.orhanobut:logger:1.11'
     compile 'com.android.support:recyclerview-v7:23.1.1'
+    compile project(':common')
 }

@@ -76,6 +76,7 @@ public class PullReFreshViewSimple extends ViewGroup {
         mScroller = new Scroller(mContext);
     }
 
+
     public void setContentView(View contentView) {
         addView(contentView, 1);
         mContent = contentView;

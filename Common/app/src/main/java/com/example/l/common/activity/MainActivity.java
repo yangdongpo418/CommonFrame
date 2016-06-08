@@ -1,25 +1,30 @@
 package com.example.l.common.activity;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.example.l.common.R;
 import com.example.l.common.api.BackEndApi;
 import com.example.l.common.api.http.RequestListener;
 import com.example.l.common.base.ToolBarActivity;
-import com.example.l.common.bean.Weather;
-import com.example.l.common.constants.Constants;
 import com.example.l.common.utils.TLog;
-import com.example.l.common.widget.PullReFreshView;
+import com.example.l.common.widget.PullReFreshViewSimple;
 import com.facebook.drawee.view.SimpleDraweeView;
+import com.thirdparty.proxy.bean.Location;
+import com.thirdparty.proxy.map.LocationClient;
 
 import butterknife.Bind;
 import butterknife.OnClick;
@@ -32,11 +37,14 @@ public class MainActivity extends ToolBarActivity {
     @Nullable@Bind(R.id.drawee_image)
     SimpleDraweeView image;
 
-    @Nullable@Bind(R.id.main_iv)
-    ImageView main_iv;
-
     @Bind(R.id.main_pull_refresh)
-    PullReFreshView pullRefresh;
+    PullReFreshViewSimple pullRefresh;
+
+    @Bind(R.id.location_address)
+    TextView locationAddress;
+
+    private BroadcastReceiver mReceiver;
+    private LocationClient mLocationClient;
 
     @Override
     protected int getLayoutId() {
@@ -49,7 +57,7 @@ public class MainActivity extends ToolBarActivity {
         setActionBarTitle("");
         setActionBarTitleColor(R.color.white);
 
-        pullRefresh.setOnRefreshListener(new PullReFreshView.OnRefreshListener() {
+        pullRefresh.setOnRefreshListener(new PullReFreshViewSimple.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 Log.d("Log_text", "PullActivity+onRefresh+下拉刷新了");
@@ -71,19 +79,39 @@ public class MainActivity extends ToolBarActivity {
 
     @Override
     public void initData() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(LocationClient.ACTION_LOCATION_FAILURE);
+        filter.addAction(LocationClient.ACTION_LOCATION_SUCCESS);
+        filter.addCategory(LocationClient.CATEGORY_LOCATION);
 
+        mReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Location location = intent.getParcelableExtra(LocationClient.LOCATION);
+                String action = intent.getAction();
+                if(TextUtils.equals(action,LocationClient.ACTION_LOCATION_FAILURE)){
+                    showToast("定位失败",android.R.drawable.sym_def_app_icon, Gravity.CENTER);
+                }else{
+                    showToast("定位成功",android.R.drawable.sym_def_app_icon, Gravity.CENTER);
+                    locationAddress.setText(location.toString());
+                }
+            }
+        };
+
+        registerReceiver(mReceiver,filter);
+
+        mLocationClient = new LocationClient(getApplicationContext());
     }
 
     @OnClick(R.id.request_net)
     public void request(View view){
-        showToast("请求网络",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
         setActionBarTitleColor(R.color.white);
-        BackEndApi.weatherInfo(new RequestListener<Weather>() {
+        BackEndApi.baiDu(new RequestListener<String>() {
             @Override
-            public void onSuccess(Weather response) {
+            public void onSuccess(String response) {
                 showToast(response.toString(),0, Gravity.CENTER);
-                TLog.i(response.toString());
-                updateViewState(Constants.STATE_LOADING);
+                TLog.i(response);
+//                updateViewState(Constants.STATE_LOADING);
             }
 
             @Override
@@ -96,6 +124,11 @@ public class MainActivity extends ToolBarActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(mReceiver);
+        if(mLocationClient !=null){
+            mLocationClient.onDestroy();
+            mLocationClient = null;
+        }
     }
 
     @OnClick(R.id.request_image)
@@ -103,13 +136,17 @@ public class MainActivity extends ToolBarActivity {
         Uri uri = Uri.parse("http://10.0.2.2:8080/manager/5.png");
         image.setImageURI(uri);
         showToast("加载图片",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
-
     }
 
     @OnClick(R.id.complete)
     public void finishRefresh(View view){
         pullRefresh.complete();
         showToast("举报点击",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
+    }
+
+    @OnClick(R.id.location)
+    public void location(View view){
+        mLocationClient.startLocation();
     }
 
     @Override
@@ -134,4 +171,5 @@ public class MainActivity extends ToolBarActivity {
         View view = super.onBeforeSetContentLayout(contentView);
         return view;
     }
+
 }

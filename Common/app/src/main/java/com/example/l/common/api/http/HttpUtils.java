@@ -4,6 +4,7 @@ import android.net.Uri;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.GsonJsonRequest;
+import com.android.volley.toolbox.StringRequest;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +27,13 @@ public class HttpUtils {
         GsonJsonRequest request = new GsonJsonRequest(Request.Method.POST, url, params, clazz, listener, listener);
         RequestManager.getRequestQueue().add(request);
     }
+
+    public static <T> void getString(String url, RequestListener<String> listener) {
+        StringRequest request = new StringRequest(Request.Method.GET, url, listener, listener);
+        RequestManager.getRequestQueue().add(request);
+    }
+
+
 
 
     /**
