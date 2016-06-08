@@ -22,5 +22,5 @@ dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     testCompile 'junit:junit:4.12'
     compile files('libs/AMap_Location_V2.5.0_20160526.jar')
-    compile files('libs/AMap_2DMap_V2.9.0_20160525.jar')
+    compile files('libs/AMap2DMap_2.9.0_AMapSearch_3.2.1_20160525.jar')
 }

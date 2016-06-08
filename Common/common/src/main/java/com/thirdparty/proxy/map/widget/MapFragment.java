@@ -1,35 +1,57 @@
 package com.thirdparty.proxy.map.widget;
 
 import android.app.Fragment;
+import android.app.ProgressDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps2d.AMap;
+import com.amap.api.maps2d.CameraUpdateFactory;
 import com.amap.api.maps2d.LocationSource;
 import com.amap.api.maps2d.MapView;
 import com.amap.api.maps2d.model.BitmapDescriptorFactory;
+import com.amap.api.maps2d.model.CameraPosition;
+import com.amap.api.maps2d.model.LatLng;
+import com.amap.api.maps2d.model.Marker;
+import com.amap.api.maps2d.model.MarkerOptions;
 import com.amap.api.maps2d.model.MyLocationStyle;
+import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.geocoder.GeocodeAddress;
+import com.amap.api.services.geocoder.GeocodeQuery;
+import com.amap.api.services.geocoder.GeocodeResult;
+import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeQuery;
+import com.amap.api.services.geocoder.RegeocodeResult;
 import com.thirdparty.proxy.R;
+import com.thirdparty.proxy.map.util.AMapUtil;
+import com.thirdparty.proxy.map.util.ToastUtil;
 
 /**
  * @author:dongpo 创建时间: 6/8/2016
  * 描述:
  * 修改:
  */
-public class MapFragment extends Fragment implements LocationSource, AMapLocationListener {
+public class MapFragment extends Fragment implements LocationSource, AMapLocationListener, AMap.OnMapClickListener, AMap.OnMapLongClickListener, AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener {
     private MapView mapView;
     private AMap aMap;
     private AMapLocationClient mlocationClient;
     private AMapLocationClientOption mLocationOption;
     private OnLocationChangedListener mListener;
+    private GeocodeSearch geocoderSearch;
+    private ProgressDialog progDialog;
+    private Marker geoMarker;
+    private Marker regeoMarker;
+    private String addressName;
+    private LatLonPoint mLatLonPoint;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -51,6 +73,13 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
         if (aMap == null) {
             aMap = mapView.getMap();
             setUpMap();
+
+            geoMarker = aMap.addMarker(new MarkerOptions().anchor(0.5f, 0.5f)
+                    .icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_BLUE)));
+            regeoMarker = aMap.addMarker(new MarkerOptions().anchor(0.5f, 0.5f)
+                    .icon(BitmapDescriptorFactory
+                            .defaultMarker(BitmapDescriptorFactory.HUE_RED)));
         }
     }
 
@@ -108,6 +137,14 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
         aMap.getUiSettings().setMyLocationButtonEnabled(true);// 设置默认定位按钮是否显示
         aMap.setMyLocationEnabled(true);// 设置为true表示显示定位层并可触发定位，false表示隐藏定位层并不可触发定位，默认是false
         // aMap.setMyLocationType()
+
+        aMap.setOnMapClickListener(this);// 对amap添加单击地图事件监听器
+        aMap.setOnMapLongClickListener(this);// 对amap添加长按地图事件监听器
+        aMap.setOnCameraChangeListener(this);// 对amap添加移动地图事件监听器
+
+        geocoderSearch = new GeocodeSearch(getActivity());
+        geocoderSearch.setOnGeocodeSearchListener(this);
+        progDialog = new ProgressDialog(getActivity());
     }
 
     @Override
@@ -153,6 +190,117 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
                 String errText = "定位失败," + amapLocation.getErrorCode()+ ": " + amapLocation.getErrorInfo();
                 Log.e("AmapErr",errText);
             }
+        }
+    }
+
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        mLatLonPoint = new LatLonPoint( latLng.latitude,latLng.longitude);
+        getAddress(mLatLonPoint);
+        Toast.makeText(getActivity(), latLng.toString(), Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+
+    }
+
+    @Override
+    public void onCameraChange(CameraPosition cameraPosition) {
+
+    }
+
+    @Override
+    public void onCameraChangeFinish(CameraPosition cameraPosition) {
+
+    }
+
+    /**
+     * 响应地理编码
+     */
+    public void getLatlon(final String name) {
+        showDialog();
+        GeocodeQuery query = new GeocodeQuery(name, "010");// 第一个参数表示地址，第二个参数表示查询城市，中文或者中文全拼，citycode、adcode，
+        geocoderSearch.getFromLocationNameAsyn(query);// 设置同步地理编码请求
+    }
+
+    /**
+     * 响应逆地理编码
+     */
+    public void getAddress(final LatLonPoint latLonPoint) {
+        showDialog();
+        RegeocodeQuery query = new RegeocodeQuery(latLonPoint, 200,
+                GeocodeSearch.AMAP);// 第一个参数表示一个Latlng，第二参数表示范围多少米，第三个参数表示是火系坐标系还是GPS原生坐标系
+        geocoderSearch.getFromLocationAsyn(query);// 设置同步逆地理编码请求
+    }
+
+    /**
+     * 显示进度条对话框
+     */
+    public void showDialog() {
+        progDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progDialog.setIndeterminate(false);
+        progDialog.setCancelable(true);
+        progDialog.setMessage("正在获取地址");
+        progDialog.show();
+    }
+
+    /**
+     * 隐藏进度条对话框
+     */
+    public void dismissDialog() {
+        if (progDialog != null) {
+            progDialog.dismiss();
+        }
+    }
+
+    /**
+     * 地理编码查询回调
+     */
+    @Override
+    public void onGeocodeSearched(GeocodeResult result, int rCode) {
+        dismissDialog();
+        if (rCode == 1000) {
+            if (result != null && result.getGeocodeAddressList() != null
+                    && result.getGeocodeAddressList().size() > 0) {
+                GeocodeAddress address = result.getGeocodeAddressList().get(0);
+                aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        AMapUtil.convertToLatLng(address.getLatLonPoint()), 15));
+                geoMarker.setPosition(AMapUtil.convertToLatLng(address
+                        .getLatLonPoint()));
+                addressName = "经纬度值:" + address.getLatLonPoint() + "\n位置描述:"
+                        + address.getFormatAddress();
+                ToastUtil.show(getActivity(), addressName);
+            } else {
+                ToastUtil.show(getActivity(), "没有结果");
+            }
+
+        } else {
+            ToastUtil.showerror(getActivity(), rCode);
+        }
+    }
+
+    /**
+     * 逆地理编码回调
+     */
+    @Override
+    public void onRegeocodeSearched(RegeocodeResult result, int rCode) {
+        dismissDialog();
+        if (rCode == 1000) {
+            if (result != null && result.getRegeocodeAddress() != null
+                    && result.getRegeocodeAddress().getFormatAddress() != null) {
+                addressName = result.getRegeocodeAddress().getFormatAddress()
+                        + "附近";
+                aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        AMapUtil.convertToLatLng(mLatLonPoint), 15));
+                regeoMarker.setPosition(AMapUtil.convertToLatLng(mLatLonPoint));
+                ToastUtil.show(getActivity(), addressName);
+            } else {
+                ToastUtil.show(getActivity(), "没有结果");
+            }
+        } else {
+            ToastUtil.showerror(getActivity(), rCode);
         }
     }
 }
