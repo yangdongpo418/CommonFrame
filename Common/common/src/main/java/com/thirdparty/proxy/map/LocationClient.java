@@ -9,6 +9,7 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationListener;
 import com.thirdparty.proxy.bean.Location;
+import com.thirdparty.proxy.map.util.Constants;
 
 /**
  * @author:dongpo 创建时间: 6/7/2016
@@ -125,6 +126,12 @@ public class LocationClient implements AMapLocationListener {
 
     public Location getLastLocation() {
         AMapLocation lastKnownLocation = locationClient.getLastKnownLocation();
+        if(lastKnownLocation == null){
+            Location location = new Location();
+            location.longitude = Constants.SHANGHAI.longitude;
+            location.latitude = Constants.SHANGHAI.latitude;
+            return location;
+        }
         return mapLocationToBean(lastKnownLocation);
     }
 

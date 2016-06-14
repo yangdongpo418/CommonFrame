@@ -8,13 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps2d.AMap;
+import com.amap.api.maps2d.CameraUpdate;
 import com.amap.api.maps2d.CameraUpdateFactory;
 import com.amap.api.maps2d.LocationSource;
 import com.amap.api.maps2d.MapView;
@@ -24,23 +24,31 @@ import com.amap.api.maps2d.model.LatLng;
 import com.amap.api.maps2d.model.Marker;
 import com.amap.api.maps2d.model.MarkerOptions;
 import com.amap.api.maps2d.model.MyLocationStyle;
+import com.amap.api.maps2d.overlay.PoiOverlay;
 import com.amap.api.services.core.LatLonPoint;
+import com.amap.api.services.core.PoiItem;
+import com.amap.api.services.core.SuggestionCity;
 import com.amap.api.services.geocoder.GeocodeAddress;
 import com.amap.api.services.geocoder.GeocodeQuery;
 import com.amap.api.services.geocoder.GeocodeResult;
 import com.amap.api.services.geocoder.GeocodeSearch;
 import com.amap.api.services.geocoder.RegeocodeQuery;
 import com.amap.api.services.geocoder.RegeocodeResult;
+import com.amap.api.services.poisearch.PoiResult;
+import com.amap.api.services.poisearch.PoiSearch;
 import com.thirdparty.proxy.R;
+import com.thirdparty.proxy.bean.Location;
 import com.thirdparty.proxy.map.util.AMapUtil;
 import com.thirdparty.proxy.map.util.ToastUtil;
+
+import java.util.List;
 
 /**
  * @author:dongpo 创建时间: 6/8/2016
  * 描述:
  * 修改:
  */
-public class MapFragment extends Fragment implements LocationSource, AMapLocationListener, AMap.OnMapClickListener, AMap.OnMapLongClickListener, AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener {
+public class MapFragment extends Fragment implements LocationSource, AMapLocationListener, AMap.OnMapClickListener, AMap.OnMapLongClickListener, AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener, PoiSearch.OnPoiSearchListener {
     private MapView mapView;
     private AMap aMap;
     private AMapLocationClient mlocationClient;
@@ -52,6 +60,8 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
     private Marker regeoMarker;
     private String addressName;
     private LatLonPoint mLatLonPoint;
+    private String mKeyWord;
+    private PoiSearch.Query mQuery;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -198,7 +208,6 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
     public void onMapClick(LatLng latLng) {
         mLatLonPoint = new LatLonPoint( latLng.latitude,latLng.longitude);
         getAddress(mLatLonPoint);
-        Toast.makeText(getActivity(), latLng.toString(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -232,7 +241,7 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
         showDialog();
         RegeocodeQuery query = new RegeocodeQuery(latLonPoint, 200,
                 GeocodeSearch.AMAP);// 第一个参数表示一个Latlng，第二参数表示范围多少米，第三个参数表示是火系坐标系还是GPS原生坐标系
-        geocoderSearch.getFromLocationAsyn(query);// 设置同步逆地理编码请求
+        geocoderSearch.getFromLocationAsyn(query); //设置同步逆地理编码请求
     }
 
     /**
@@ -292,10 +301,14 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
                     && result.getRegeocodeAddress().getFormatAddress() != null) {
                 addressName = result.getRegeocodeAddress().getFormatAddress()
                         + "附近";
+                List<PoiItem> pois = result.getRegeocodeAddress().getPois();
+                PoiItem first = pois.get(0);
+                LatLonPoint latLonPoint = first.getLatLonPoint();
+
                 aMap.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                        AMapUtil.convertToLatLng(mLatLonPoint), 15));
-                regeoMarker.setPosition(AMapUtil.convertToLatLng(mLatLonPoint));
-                ToastUtil.show(getActivity(), addressName);
+                        AMapUtil.convertToLatLng(latLonPoint), 15));
+                regeoMarker.setPosition(AMapUtil.convertToLatLng(latLonPoint));
+                ToastUtil.show(getActivity(), first.getTitle());
             } else {
                 ToastUtil.show(getActivity(), "没有结果");
             }
@@ -303,4 +316,68 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
             ToastUtil.showerror(getActivity(), rCode);
         }
     }
+
+    /**
+     * 开始进行poi搜索
+     */
+    public void doSearchQuery(String keyWord) {
+        mKeyWord = keyWord;
+        int currentPage =  0;
+        // 第一个参数表示搜索字符串，第二个参数表示poi搜索类型，第三个参数表示poi搜索区域（空字符串代表全国）
+        mQuery = new PoiSearch.Query(keyWord, "", "上海");
+        mQuery.setPageSize(10);// 设置每页最多返回多少条poiitem
+        mQuery.setPageNum(currentPage);// 设置查第一页
+        mQuery.setCityLimit(true);
+
+        PoiSearch poiSearch = new PoiSearch(getActivity(), mQuery);
+        poiSearch.setOnPoiSearchListener(this);
+        poiSearch.searchPOIAsyn();
+    }
+
+    @Override
+    public void onPoiSearched(PoiResult result, int rCode) {
+        if (rCode == 1000) {
+            if (result != null && result.getQuery() != null) {// 搜索poi的结果
+                if (result.getQuery().equals(mQuery)) {// 是否是同一条
+                    PoiResult poiResult = result;
+                    // 取得搜索到的poiitems有多少页
+                    List<PoiItem> poiItems = poiResult.getPois();// 取得第一页的poiitem数据，页数从数字0开始
+                    List<SuggestionCity> suggestionCities = poiResult
+                            .getSearchSuggestionCitys();// 当搜索不到poiitem数据时，会返回含有搜索关键字的城市信息
+
+                    if (poiItems != null && poiItems.size() > 0) {
+                        aMap.clear();// 清理之前的图标
+                        PoiOverlay poiOverlay = new PoiOverlay(aMap, poiItems);
+                        poiOverlay.removeFromMap();
+                        poiOverlay.addToMap();
+                        poiOverlay.zoomToSpan();
+                    } else if (suggestionCities != null
+                            && suggestionCities.size() > 0) {
+                    } else {
+                        ToastUtil.show(getActivity(),
+                                R.string.no_result);
+                    }
+                }
+            } else {
+                ToastUtil.show(getActivity(),
+                        R.string.no_result);
+            }
+        } else {
+            ToastUtil.showerror(getActivity(), rCode);
+        }
+
+    }
+
+    @Override
+    public void onPoiItemSearched(PoiItem poiItem, int i) {
+
+    }
+
+
+    public void moveCamera(Location location){
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(new CameraPosition(
+                new LatLng(location.latitude,location.longitude), 12, 30, 0));
+        aMap.moveCamera(cameraUpdate);
+    }
+
 }

@@ -127,6 +127,12 @@ public class ToolBarActivity extends BaseActivity implements
         }
     }
 
+    public void setActionBarTitleEnable(boolean enable){
+        if(enable == false){
+            mTvToolBarCenter.setVisibility(View.GONE);
+        }
+    }
+
     public void setActionBarTitle(String title) {
         if (StringUtils.isEmpty(title)) {
             mActionBar.setDisplayShowTitleEnabled(false);

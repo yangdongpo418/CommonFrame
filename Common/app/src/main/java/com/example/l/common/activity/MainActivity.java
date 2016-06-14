@@ -7,13 +7,16 @@ import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.example.l.common.R;
@@ -25,11 +28,12 @@ import com.example.l.common.widget.PullReFreshViewSimple;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.thirdparty.proxy.bean.Location;
 import com.thirdparty.proxy.map.LocationClient;
+import com.thirdparty.proxy.map.widget.MapFragment;
 
 import butterknife.Bind;
 import butterknife.OnClick;
 
-public class MainActivity extends ToolBarActivity {
+public class MainActivity extends ToolBarActivity implements TextWatcher {
 
     @Nullable@Bind(R.id.request_net)
     Button request;
@@ -45,6 +49,8 @@ public class MainActivity extends ToolBarActivity {
 
     private BroadcastReceiver mReceiver;
     private LocationClient mLocationClient;
+    private MapFragment mMapFragment;
+    private EditText mSearch;
 
     @Override
     protected int getLayoutId() {
@@ -56,6 +62,7 @@ public class MainActivity extends ToolBarActivity {
         super.initView();
         setActionBarTitle("");
         setActionBarTitleColor(R.color.white);
+        mMapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.location_map);
 
         pullRefresh.setOnRefreshListener(new PullReFreshViewSimple.OnRefreshListener() {
             @Override
@@ -75,6 +82,12 @@ public class MainActivity extends ToolBarActivity {
                 }).start();
             }
         });
+
+        setActionBarTitleEnable(false);
+        addActionBarCustomView(R.layout.view_map_search);
+        mSearch = (EditText) findViewById(R.id.map_search);
+        mSearch.addTextChangedListener(this);
+
     }
 
     @Override
@@ -99,8 +112,10 @@ public class MainActivity extends ToolBarActivity {
         };
 
         registerReceiver(mReceiver,filter);
-
         mLocationClient = new LocationClient(getApplicationContext());
+
+        Location lastLocation = mLocationClient.getLastLocation();
+        mMapFragment.moveCamera(lastLocation);
     }
 
     @OnClick(R.id.request_net)
@@ -172,4 +187,18 @@ public class MainActivity extends ToolBarActivity {
         return view;
     }
 
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+        mMapFragment.doSearchQuery(s.toString());
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+
+    }
 }
