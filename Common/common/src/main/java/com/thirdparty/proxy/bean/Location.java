@@ -3,6 +3,8 @@ package com.thirdparty.proxy.bean;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.amap.api.location.AMapLocation;
+
 /**
  * @author:dongpo 创建时间: 6/7/2016
  * 描述:
@@ -63,6 +65,22 @@ public class Location implements Parcelable{
         this.street = in.readString();
         this.poiName = in.readString();
         this.streetNum = in.readString();
+    }
+
+    public Location(AMapLocation loc){
+        this.statsCode = loc.getErrorCode();
+        this.address = loc.getAddress();
+        this.country = loc.getCountry();
+        this.longitude = loc.getLongitude();
+        this.latitude = loc.getLatitude();
+        this.precision = loc.getAccuracy();
+        this.city = loc.getCity();
+        this.area = loc.getDistrict();
+        this.province = loc.getProvince();
+        this.road = loc.getRoad();
+        this.street = loc.getStreet();
+        this.poiName = loc.getPoiName();
+        this.streetNum = loc.getStreetNum();
     }
 
     public static final Creator<Location> CREATOR = new Creator<Location>() {

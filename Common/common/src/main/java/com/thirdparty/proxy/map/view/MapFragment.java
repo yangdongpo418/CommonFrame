@@ -1,13 +1,18 @@
-package com.thirdparty.proxy.map.widget;
+package com.thirdparty.proxy.map.view;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -18,13 +23,15 @@ import com.amap.api.maps2d.CameraUpdate;
 import com.amap.api.maps2d.CameraUpdateFactory;
 import com.amap.api.maps2d.LocationSource;
 import com.amap.api.maps2d.MapView;
+import com.amap.api.maps2d.model.BitmapDescriptor;
 import com.amap.api.maps2d.model.BitmapDescriptorFactory;
 import com.amap.api.maps2d.model.CameraPosition;
 import com.amap.api.maps2d.model.LatLng;
 import com.amap.api.maps2d.model.Marker;
 import com.amap.api.maps2d.model.MarkerOptions;
 import com.amap.api.maps2d.model.MyLocationStyle;
-import com.amap.api.maps2d.overlay.PoiOverlay;
+import com.amap.api.maps2d.model.Text;
+import com.amap.api.maps2d.model.TextOptions;
 import com.amap.api.services.core.LatLonPoint;
 import com.amap.api.services.core.PoiItem;
 import com.amap.api.services.core.SuggestionCity;
@@ -39,8 +46,10 @@ import com.amap.api.services.poisearch.PoiSearch;
 import com.thirdparty.proxy.R;
 import com.thirdparty.proxy.bean.Location;
 import com.thirdparty.proxy.map.util.AMapUtil;
+import com.thirdparty.proxy.map.util.Constants;
 import com.thirdparty.proxy.map.util.ToastUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -48,7 +57,7 @@ import java.util.List;
  * 描述:
  * 修改:
  */
-public class MapFragment extends Fragment implements LocationSource, AMapLocationListener, AMap.OnMapClickListener, AMap.OnMapLongClickListener, AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener, PoiSearch.OnPoiSearchListener {
+public class MapFragment extends Fragment implements LocationSource, AMapLocationListener, AMap.OnMapClickListener, AMap.OnMapLongClickListener, AMap.OnCameraChangeListener, GeocodeSearch.OnGeocodeSearchListener, PoiSearch.OnPoiSearchListener, AMap.OnMarkerDragListener, AMap.OnMapLoadedListener, AMap.OnMarkerClickListener, AMap.OnInfoWindowClickListener, AMap.InfoWindowAdapter {
     private MapView mapView;
     private AMap aMap;
     private AMapLocationClient mlocationClient;
@@ -62,6 +71,9 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
     private LatLonPoint mLatLonPoint;
     private String mKeyWord;
     private PoiSearch.Query mQuery;
+    private onPoiSearchListener mPoiListener;
+    private MarkerOptions markerOption;
+    private Marker marker2;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -155,6 +167,13 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
         geocoderSearch = new GeocodeSearch(getActivity());
         geocoderSearch.setOnGeocodeSearchListener(this);
         progDialog = new ProgressDialog(getActivity());
+
+
+        aMap.setOnMarkerDragListener(this);// 设置marker可拖拽事件监听器
+        aMap.setOnMapLoadedListener(this);// 设置amap加载成功事件监听器
+        aMap.setOnMarkerClickListener(this);// 设置点击marker事件监听器
+        aMap.setOnInfoWindowClickListener(this);// 设置点击infoWindow事件监听器
+        aMap.setInfoWindowAdapter(this);// 设置自定义InfoWindow样式
     }
 
     @Override
@@ -173,7 +192,7 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
             // 注意设置合适的定位时间的间隔（最小间隔支持为2000ms），并且在合适时间调用stopLocation()方法来取消定位请求
             // 在定位结束后，在合适的生命周期调用onDestroy()方法
             // 在单次定位情况下，定位无论成功与否，都无需调用stopLocation()方法移除请求，定位sdk内部会移除
-            mlocationClient.startLocation();
+            //mlocationClient.startLocation();
         }
     }
 
@@ -320,8 +339,8 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
     /**
      * 开始进行poi搜索
      */
-    public void doSearchQuery(String keyWord) {
-        mKeyWord = keyWord;
+    public void doSearchQuery(String keyWord, onPoiSearchListener poiListener) {
+        mPoiListener = poiListener;
         int currentPage =  0;
         // 第一个参数表示搜索字符串，第二个参数表示poi搜索类型，第三个参数表示poi搜索区域（空字符串代表全国）
         mQuery = new PoiSearch.Query(keyWord, "", "上海");
@@ -337,35 +356,34 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
     @Override
     public void onPoiSearched(PoiResult result, int rCode) {
         if (rCode == 1000) {
+            PoiSearch.Query query = result.getQuery();
+            String keyword = query.getQueryString();
             if (result != null && result.getQuery() != null) {// 搜索poi的结果
-                if (result.getQuery().equals(mQuery)) {// 是否是同一条
-                    PoiResult poiResult = result;
-                    // 取得搜索到的poiitems有多少页
-                    List<PoiItem> poiItems = poiResult.getPois();// 取得第一页的poiitem数据，页数从数字0开始
-                    List<SuggestionCity> suggestionCities = poiResult
-                            .getSearchSuggestionCitys();// 当搜索不到poiitem数据时，会返回含有搜索关键字的城市信息
+                PoiResult poiResult = result;
+                // 取得搜索到的poiitems有多少页
+                List<PoiItem> poiItems = poiResult.getPois();// 取得第一页的poiitem数据，页数从数字0开始
+                List<SuggestionCity> suggestionCities = poiResult
+                        .getSearchSuggestionCitys();// 当搜索不到poiitem数据时，会返回含有搜索关键字的城市信息
 
-                    if (poiItems != null && poiItems.size() > 0) {
-                        aMap.clear();// 清理之前的图标
-                        PoiOverlay poiOverlay = new PoiOverlay(aMap, poiItems);
-                        poiOverlay.removeFromMap();
-                        poiOverlay.addToMap();
-                        poiOverlay.zoomToSpan();
-                    } else if (suggestionCities != null
-                            && suggestionCities.size() > 0) {
-                    } else {
-                        ToastUtil.show(getActivity(),
-                                R.string.no_result);
+                if (poiItems != null && poiItems.size() > 0) {
+                        mPoiListener.onPoiSearch(keyword,poiItems);
+                } else if (suggestionCities != null
+                        && suggestionCities.size() > 0) {
+                } else {
+                    if(mPoiListener != null){
+                        mPoiListener.onPoiSearch(keyword,null);
                     }
                 }
             } else {
-                ToastUtil.show(getActivity(),
-                        R.string.no_result);
+                if(mPoiListener != null){
+                    mPoiListener.onPoiSearch(keyword,null);
+                }
             }
         } else {
-            ToastUtil.showerror(getActivity(), rCode);
+            if(mPoiListener != null){
+                mPoiListener.onFailure(rCode);
+            }
         }
-
     }
 
     @Override
@@ -375,9 +393,140 @@ public class MapFragment extends Fragment implements LocationSource, AMapLocatio
 
 
     public void moveCamera(Location location){
+        moveCamera(location.latitude,location.longitude);
+    }
+
+    public void moveCamera(PoiItem item){
+        moveCamera(item.getLatLonPoint().getLatitude(),item.getLatLonPoint().getLongitude());
+    }
+
+    public void moveCamera(double latitude, double longitude){
         CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(new CameraPosition(
-                new LatLng(location.latitude,location.longitude), 12, 30, 0));
+                new LatLng(latitude,longitude), 12, 30, 0));
         aMap.moveCamera(cameraUpdate);
     }
 
+    public void addPoiOverlay(List<PoiItem> poiItems) {
+        aMap.clear();// 清理之前的图标
+        for (int i = 0; i < poiItems.size(); i++) {
+            addMarkersToMap(poiItems.get(i));
+        }
+    }
+
+    public void addPoiOverlay(PoiItem poiItem){
+        aMap.clear();
+        addMarkersToMap(poiItem);
+        moveCamera(poiItem);
+    }
+
+    /**
+     * 在地图上添加marker
+     */
+    public void addMarkersToMap(PoiItem poiItem) {
+
+        //文字显示标注，可以设置显示内容，位置，字体大小颜色，背景色旋转角度,Z值等
+        TextOptions textOptions = new TextOptions().position(Constants.BEIJING)
+                .text("Text").fontColor(Color.BLACK)
+                .backgroundColor(Color.BLUE).fontSize(30).rotate(20).align(Text.ALIGN_CENTER_HORIZONTAL, Text.ALIGN_CENTER_VERTICAL)
+                .zIndex(1.f).typeface(Typeface.DEFAULT_BOLD)
+                ;
+        aMap.addText(textOptions);
+
+        // 动画效果
+        ArrayList<BitmapDescriptor> giflist = new ArrayList<BitmapDescriptor>();
+        giflist.add(BitmapDescriptorFactory
+                .defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+        giflist.add(BitmapDescriptorFactory
+                .defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        giflist.add(BitmapDescriptorFactory
+                .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+
+        Marker marker = aMap.addMarker(new MarkerOptions().anchor(0.5f, 0.5f)
+                .position(new LatLng(poiItem.getLatLonPoint().getLatitude(), poiItem.getLatLonPoint().getLongitude())).title(poiItem.getTitle())
+                .snippet(poiItem.getAdName()).icons(giflist).draggable(false));
+        marker.showInfoWindow();
+    }
+
+
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+
+    }
+
+    @Override
+    public void onMapLoaded() {
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        return false;
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+    }
+
+    public interface onPoiSearchListener{
+        void onPoiSearch(String keyword, List<PoiItem> poiItems);
+        void onFailure(int rCode);
+    }
+
+
+    @Override
+    public View getInfoWindow(Marker marker) {
+        return null;
+    }
+
+    /**
+     * 监听自定义infowindow窗口的infocontents事件回调
+     */
+    @Override
+    public View getInfoContents(Marker marker) {
+        View infoContent = getActivity().getLayoutInflater().inflate(
+                R.layout.custom_info_contents, null);
+        render(marker, infoContent);
+        return infoContent;
+    }
+
+    /**
+     * 自定义infowinfow窗口
+     */
+    public void render(Marker marker, View view) {
+        ((ImageView) view.findViewById(R.id.badge))
+                .setImageResource(R.drawable.badge_sa);
+
+        String title = marker.getTitle();
+        TextView titleUi = ((TextView) view.findViewById(R.id.title));
+        if (title != null) {
+            SpannableString titleText = new SpannableString(title);
+            titleText.setSpan(new ForegroundColorSpan(Color.BLACK), 0,
+                    titleText.length(), 0);
+            titleUi.setText(titleText);
+
+        } else {
+            titleUi.setText("");
+        }
+        String snippet = marker.getSnippet();
+        TextView snippetUi = ((TextView) view.findViewById(R.id.snippet));
+        if (snippet != null) {
+            SpannableString snippetText = new SpannableString(snippet);
+            snippetText.setSpan(new ForegroundColorSpan(Color.BLUE), 0,
+                    snippetText.length(), 0);
+            snippetUi.setText(snippetText);
+        } else {
+            snippetUi.setText("");
+        }
+    }
 }

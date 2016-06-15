@@ -8,6 +8,7 @@ import android.os.Message;
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationListener;
+import com.amap.api.services.poisearch.PoiSearch;
 import com.thirdparty.proxy.bean.Location;
 import com.thirdparty.proxy.map.util.Constants;
 
@@ -49,7 +50,7 @@ public class LocationClient implements AMapLocationListener {
                 // 定位完成
                 case MSG_LOCATION_FINISH:
                     AMapLocation loc = (AMapLocation) msg.obj;
-                    Location location = mapLocationToBean(loc);
+                    Location location = new Location(loc);
                     if (loc.getErrorCode() == 0) {
                         sendLocationBroadcast(ACTION_LOCATION_SUCCESS, location);
                     } else {
@@ -69,25 +70,7 @@ public class LocationClient implements AMapLocationListener {
         ;
     };
     private Context mContext;
-
-    private Location mapLocationToBean(AMapLocation loc) {
-        Location location = new Location();
-        location.statsCode = loc.getErrorCode();
-        location.address = loc.getAddress();
-        location.country = loc.getCountry();
-        location.longitude = loc.getLongitude();
-        location.latitude = loc.getLatitude();
-        location.precision = loc.getAccuracy();
-        location.city = loc.getCity();
-        location.area = loc.getDistrict();
-        location.province = loc.getProvince();
-        location.road = loc.getRoad();
-        location.street = loc.getStreet();
-        location.poiName = loc.getPoiName();
-        location.streetNum = loc.getStreetNum();
-
-        return location;
-    }
+    private PoiSearch.Query mQuery;
 
     public LocationClient(Context context) {
         mContext = context;
@@ -126,13 +109,13 @@ public class LocationClient implements AMapLocationListener {
 
     public Location getLastLocation() {
         AMapLocation lastKnownLocation = locationClient.getLastKnownLocation();
-        if(lastKnownLocation == null){
+        if (lastKnownLocation == null) {
             Location location = new Location();
             location.longitude = Constants.SHANGHAI.longitude;
             location.latitude = Constants.SHANGHAI.latitude;
             return location;
         }
-        return mapLocationToBean(lastKnownLocation);
+        return new Location(lastKnownLocation);
     }
 
     public void stopLocation() {

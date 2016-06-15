@@ -22,6 +22,12 @@ public abstract class BaseListViewAdapter<T> extends BaseAdapter{
         mLayoutId = layoutId;
     }
 
+    public void setData(List<T> content){
+        mContent.clear();
+        mContent.addAll(content);
+        notifyDataSetChanged();
+    }
+
 
     @Override
     public int getCount() {

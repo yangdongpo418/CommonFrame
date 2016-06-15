@@ -4,36 +4,50 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.text.Editable;
+import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
+import com.amap.api.maps2d.model.Marker;
+import com.amap.api.services.core.PoiItem;
 import com.example.l.common.R;
 import com.example.l.common.api.BackEndApi;
 import com.example.l.common.api.http.RequestListener;
+import com.example.l.common.base.BaseListViewAdapter;
+import com.example.l.common.base.CommViewHolder;
 import com.example.l.common.base.ToolBarActivity;
 import com.example.l.common.utils.TLog;
+import com.example.l.common.utils.WindowUtils;
 import com.example.l.common.widget.PullReFreshViewSimple;
 import com.facebook.drawee.view.SimpleDraweeView;
 import com.thirdparty.proxy.bean.Location;
 import com.thirdparty.proxy.map.LocationClient;
-import com.thirdparty.proxy.map.widget.MapFragment;
+import com.thirdparty.proxy.map.view.MapFragment;
+
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.OnClick;
 
-public class MainActivity extends ToolBarActivity implements TextWatcher {
+public class MainActivity extends ToolBarActivity implements TextWatcher, View.OnFocusChangeListener {
 
     @Nullable@Bind(R.id.request_net)
     Button request;
@@ -51,6 +65,10 @@ public class MainActivity extends ToolBarActivity implements TextWatcher {
     private LocationClient mLocationClient;
     private MapFragment mMapFragment;
     private EditText mSearch;
+    private PopupWindow mPoiView;
+    private ListView mPoiLvContent;
+    private MapAdapter mMapAdapter;
+    private String mKeyword;
 
     @Override
     protected int getLayoutId() {
@@ -87,8 +105,9 @@ public class MainActivity extends ToolBarActivity implements TextWatcher {
         addActionBarCustomView(R.layout.view_map_search);
         mSearch = (EditText) findViewById(R.id.map_search);
         mSearch.addTextChangedListener(this);
-
+        mSearch.setOnFocusChangeListener(this);
     }
+
 
     @Override
     public void initData() {
@@ -175,6 +194,23 @@ public class MainActivity extends ToolBarActivity implements TextWatcher {
         switch (item.getItemId()){
             case R.id.menu_check:
 //                showToast("举报点击",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
+                break;
+            case R.id.menu_search:
+                mMapFragment.doSearchQuery(mSearch.getText().toString().trim(), new MapFragment.onPoiSearchListener() {
+                    @Override
+                    public void onPoiSearch(String keyword , List<PoiItem> poiItems) {
+                        if(mPoiView != null && mPoiView.isShowing()){
+                            mPoiView.dismiss();
+                        }
+                        mMapFragment.addPoiOverlay(poiItems);
+                    }
+
+                    @Override
+                    public void onFailure(int rCode) {
+                        Log.d("Log_text", "MainActivity+onFailure+加载失败");
+                    }
+                });
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -194,11 +230,118 @@ public class MainActivity extends ToolBarActivity implements TextWatcher {
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-        mMapFragment.doSearchQuery(s.toString());
+        if(TextUtils.isEmpty(s)){
+            if(mPoiView != null && mPoiView.isShowing()){
+                mPoiView.dismiss();
+            }
+            return;
+        }
+        mKeyword = s.toString().trim();
+        mMapFragment.doSearchQuery(mKeyword,  new MapFragment.onPoiSearchListener() {
+            @Override
+            public void onPoiSearch(String keyword, final List<PoiItem> poiItems) {
+                if(poiItems == null){
+                    showToast("没有找到结果",android.R.drawable.sym_def_app_icon,Gravity.LEFT);
+                    return ;
+                }
+
+                if(keyword != mKeyword){
+                    return ;
+                }
+
+                if(mPoiView == null){
+                    View menu = mInflater.inflate(R.layout.view_map_popupwindow, null, false);
+                    mPoiLvContent = (ListView) menu.findViewById(R.id.popup_map_poi);
+                    mPoiView = new PopupWindow(menu,mSearch.getMeasuredWidth(),800);
+                    mPoiLvContent.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            PoiItem item = (PoiItem) mMapAdapter.getItem(position);
+                            mMapFragment.addPoiOverlay(item);
+                            if(mPoiView != null && mPoiView.isShowing()){
+                                mPoiView.dismiss();
+                            }
+                            mSearch.clearFocus();
+                        }
+                    });
+                }
+
+                mPoiView.showAsDropDown(mSearch);
+
+                if(mMapAdapter == null){
+                    mMapAdapter = new MapAdapter(poiItems, android.R.layout.simple_list_item_1);
+                    mPoiLvContent.setAdapter(mMapAdapter);
+                }else{
+                    mMapAdapter.setData(poiItems);
+                }
+
+            }
+
+            @Override
+            public void onFailure(int rCode) {
+                Log.d("Log_text", "MainActivity+onFailure" + rCode);
+            }
+        });
+
     }
 
     @Override
     public void afterTextChanged(Editable s) {
 
+    }
+
+    @Override
+    public void onFocusChange(View v, boolean hasFocus) {
+        if(mSearch.isFocused() && !TextUtils.isEmpty(mSearch.getText().toString().trim())){
+            mPoiView.showAsDropDown(mSearch);
+        }else{
+            WindowUtils.hideSoftKeyboard(mSearch);
+        }
+    }
+
+    /**
+     * 自定义infowinfow窗口
+     */
+    public void render(Marker marker, View view) {
+        ((ImageView) view.findViewById(com.thirdparty.proxy.R.id.badge))
+                .setImageResource(com.thirdparty.proxy.R.drawable.badge_sa);
+
+        String title = marker.getTitle();
+        TextView titleUi = ((TextView) view.findViewById(com.thirdparty.proxy.R.id.title));
+        if (title != null) {
+            SpannableString titleText = new SpannableString(title);
+            titleText.setSpan(new ForegroundColorSpan(Color.BLACK), 0,
+                    titleText.length(), 0);
+            titleUi.setText(titleText);
+
+        } else {
+            titleUi.setText("");
+        }
+        String snippet = marker.getSnippet();
+        TextView snippetUi = ((TextView) view.findViewById(com.thirdparty.proxy.R.id.snippet));
+        if (snippet != null) {
+            SpannableString snippetText = new SpannableString(snippet);
+            snippetText.setSpan(new ForegroundColorSpan(Color.BLUE), 0,
+                    snippetText.length(), 0);
+            snippetUi.setText(snippetText);
+        } else {
+            snippetUi.setText("");
+        }
+    }
+
+    public class MapAdapter extends BaseListViewAdapter<PoiItem>{
+
+        private final List<PoiItem> mContent;
+
+        public MapAdapter(List<PoiItem> content, int layoutId) {
+            super(content, layoutId);
+            mContent = content;
+        }
+
+        @Override
+        public void setItemData(CommViewHolder holder, int position) {
+            TextView tv = (TextView) holder.getViewById(android.R.id.text1);
+            tv.setText(mContent.get(position).getTitle());
+        }
     }
 }

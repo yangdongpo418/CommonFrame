@@ -17,9 +17,9 @@
 
             <fragment
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
+                android:layout_height="500dp"
                 android:id="@+id/location_map"
-                class="com.thirdparty.proxy.map.widget.MapFragment"
+                class="com.thirdparty.proxy.map.view.MapFragment"
                 ></fragment>
 
             <Button

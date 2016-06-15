@@ -1,4 +1,4 @@
-package com.thirdparty.proxy.map.widget;
+package com.thirdparty.proxy.map.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
