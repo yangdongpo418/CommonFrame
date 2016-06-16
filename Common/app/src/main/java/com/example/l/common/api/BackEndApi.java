@@ -1,8 +1,8 @@
 package com.example.l.common.api;
 
-import com.example.l.common.api.http.HttpUtils;
-import com.example.l.common.api.http.RequestListener;
-import com.example.l.common.bean.Weather;
+import com.thirdparty.proxy.net.volley.HttpUtils;
+import com.thirdparty.proxy.net.volley.RequestListener;
+import com.example.l.common.model.Weather;
 
 import java.util.HashMap;
 import java.util.Map;

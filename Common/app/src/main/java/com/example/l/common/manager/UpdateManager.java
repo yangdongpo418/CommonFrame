@@ -1,21 +1,22 @@
 package com.example.l.common.manager;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
 
-import com.example.l.common.application.AppContext;
-import com.example.l.common.bean.Update;
-import com.example.l.common.utils.DialogHelp;
-import com.example.l.common.utils.WindowUtils;
+import com.example.l.common.application.AppApplication;
+import com.example.l.common.model.Update;
+import com.thirdparty.proxy.utils.DialogHelp;
+import com.thirdparty.proxy.utils.WindowUtils;
+
 
 /**
  * 更新管理类
  *
- * @author FireAnt（http://my.oschina.net/LittleDY）
- * @version 创建时间：2014年11月18日 下午4:21:00
+ * @author
+ * @version
  */
 
 public class UpdateManager {
@@ -59,7 +60,7 @@ public class UpdateManager {
             return false;
         }
         boolean haveNew = false;
-        int curVersionCode = WindowUtils.getVersionCode(AppContext
+        int curVersionCode = WindowUtils.getVersionCode(AppApplication
                 .getInstance().getPackageName());
         if (curVersionCode < mUpdate.versionCode) {
             haveNew = true;

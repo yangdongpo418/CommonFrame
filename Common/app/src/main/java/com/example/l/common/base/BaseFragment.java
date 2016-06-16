@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.l.common.R;
-import com.example.l.common.application.AppContext;
+import com.example.l.common.application.AppApplication;
 import com.example.l.common.ui.dialog.DialogControl;
 
 
@@ -31,8 +31,8 @@ public class BaseFragment extends Fragment implements DialogControl{
 
     protected LayoutInflater mInflater;
 
-    public AppContext getApplication() {
-        return (AppContext) getActivity().getApplication();
+    public AppApplication getApplication() {
+        return (AppApplication) getActivity().getApplication();
     }
 
     @Override

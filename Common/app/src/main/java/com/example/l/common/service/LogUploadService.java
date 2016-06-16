@@ -4,7 +4,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
-import com.example.l.common.utils.StringUtils;
+import com.thirdparty.proxy.utils.StringUtils;
 
 import org.kymjs.kjframe.utils.FileUtils;
 

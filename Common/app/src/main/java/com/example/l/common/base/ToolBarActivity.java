@@ -14,7 +14,7 @@ import android.widget.TextView;
 
 import com.example.l.common.R;
 import com.example.l.common.ui.dialog.DialogControl;
-import com.example.l.common.utils.WindowUtils;
+import com.thirdparty.proxy.utils.WindowUtils;
 
 import org.kymjs.kjframe.utils.StringUtils;
 
@@ -22,8 +22,8 @@ import org.kymjs.kjframe.utils.StringUtils;
 /**
  * baseActionBar Activity
  *
- * @author FireAnt（http://my.oschina.net/LittleDY）
- * @created 2014年9月25日 上午11:30:15 引用自：tonlin
+ * @author
+ * @created
  */
 public class ToolBarActivity extends BaseActivity implements
         DialogControl {

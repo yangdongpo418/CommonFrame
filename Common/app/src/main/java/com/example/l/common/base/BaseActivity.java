@@ -10,11 +10,11 @@ import android.widget.FrameLayout;
 
 import com.example.l.common.R;
 import com.example.l.common.manager.ActivityManager;
+import com.example.l.common.ui.LoadingStateView;
 import com.example.l.common.ui.dialog.CommonToast;
 import com.example.l.common.ui.dialog.DialogControl;
-import com.example.l.common.utils.DialogHelp;
-import com.example.l.common.utils.WindowUtils;
-import com.example.l.common.widget.LoadingStateView;
+import com.thirdparty.proxy.utils.DialogHelp;
+import com.thirdparty.proxy.utils.WindowUtils;
 
 import butterknife.ButterKnife;
 

@@ -12,11 +12,11 @@ import android.os.IBinder;
 import android.os.Message;
 import android.widget.RemoteViews;
 
-import com.example.l.common.AppConfig;
 import com.example.l.common.R;
-import com.example.l.common.activity.MainActivity;
+import com.example.l.common.business.text.activity.MainActivity;
+import com.example.l.common.config.AppConfig;
 import com.example.l.common.interf.ICallbackResult;
-import com.example.l.common.utils.WindowUtils;
+import com.thirdparty.proxy.utils.WindowUtils;
 
 import org.kymjs.kjframe.utils.StringUtils;
 
@@ -27,10 +27,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 /**
- * download service
- * 
- * @author FireAnt（http://my.oschina.net/LittleDY）
- * @created 2014年11月18日 下午3:02:36
+ * @author
+ * @created
  * 
  */
 public class DownloadService extends Service {

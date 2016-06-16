@@ -49,7 +49,7 @@ public abstract class BaseListViewAdapter<T> extends BaseAdapter{
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        CommViewHolder holder = CommViewHolder.getInstance(mLayoutId, convertView, parent);
+        ViewHolder holder = ViewHolder.getInstance(mLayoutId, convertView, parent);
         //不知道子类具体的设置方式，进行抽象，由子类实现
         setItemData(holder,position);
         return holder.getRootView();
@@ -60,7 +60,7 @@ public abstract class BaseListViewAdapter<T> extends BaseAdapter{
      * @param holder 通过holder的getViewById方法获得子View的View对象
      * @param position 当前ListView对应的索引
      */
-    public abstract void setItemData(CommViewHolder holder,int position);
+    public abstract void setItemData(ViewHolder holder, int position);
 
 }
 

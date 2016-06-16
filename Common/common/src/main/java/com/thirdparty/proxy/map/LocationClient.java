@@ -9,7 +9,7 @@ import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.services.poisearch.PoiSearch;
-import com.thirdparty.proxy.bean.Location;
+import com.thirdparty.proxy.model.Location;
 import com.thirdparty.proxy.map.util.Constants;
 
 /**

@@ -24,7 +24,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.example.l.common.R;
-import com.example.l.common.utils.WindowUtils;
+import com.thirdparty.proxy.utils.WindowUtils;
 
 
 public class CommonDialog extends Dialog {

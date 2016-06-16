@@ -12,7 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.l.common.R;
-import com.example.l.common.utils.WindowUtils;
+import com.thirdparty.proxy.utils.WindowUtils;
 
 import org.kymjs.kjframe.utils.StringUtils;
 

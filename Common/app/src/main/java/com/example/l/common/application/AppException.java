@@ -8,7 +8,6 @@ import android.os.Build;
 import android.os.Looper;
 
 import com.example.l.common.manager.ActivityManager;
-import com.example.l.common.ui.UIHelper;
 
 import org.kymjs.kjframe.utils.FileUtils;
 import org.kymjs.kjframe.utils.SystemTool;
@@ -54,10 +53,10 @@ public class AppException extends Exception implements UncaughtExceptionHandler 
     /**
      * 系统默认的UncaughtException处理类
      */
-    private AppContext mContext;
+    private AppApplication mContext;
 
     private AppException(Context context) {
-        this.mContext = (AppContext) context;
+        this.mContext = (AppApplication) context;
     }
 
     private AppException(byte type, int code, Exception excp) {
@@ -170,13 +169,17 @@ public class AppException extends Exception implements UncaughtExceptionHandler 
                     public void run() {
                         Looper.prepare();
                         // 拿到未捕获的异常，
-                        UIHelper.sendAppCrashReport(context);
+                        sendAppCrashReport(context);
                         Looper.loop();
                     }
                 }.start();
             }
         }
         return true;
+    }
+
+    private void sendAppCrashReport(Context context) {
+
     }
 
     private boolean saveToSDCard(Throwable ex) throws Exception {

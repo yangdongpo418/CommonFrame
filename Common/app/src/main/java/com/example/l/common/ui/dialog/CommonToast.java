@@ -15,8 +15,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.l.common.R;
-import com.example.l.common.utils.WindowUtils;
-import com.example.l.common.utils.TLog;
+import com.thirdparty.proxy.log.TLog;
+import com.thirdparty.proxy.utils.WindowUtils;
 
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class CommonToast {

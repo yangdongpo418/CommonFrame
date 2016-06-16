@@ -44,7 +44,7 @@ import com.amap.api.services.geocoder.RegeocodeResult;
 import com.amap.api.services.poisearch.PoiResult;
 import com.amap.api.services.poisearch.PoiSearch;
 import com.thirdparty.proxy.R;
-import com.thirdparty.proxy.bean.Location;
+import com.thirdparty.proxy.model.Location;
 import com.thirdparty.proxy.map.util.AMapUtil;
 import com.thirdparty.proxy.map.util.Constants;
 import com.thirdparty.proxy.map.util.ToastUtil;
