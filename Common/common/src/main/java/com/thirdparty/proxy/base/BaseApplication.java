@@ -1,7 +1,6 @@
 package com.thirdparty.proxy.base;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,7 +8,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.os.Build;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -155,22 +153,6 @@ public class BaseApplication extends Application {
     public static SharedPreferences getPreferences(String prefName) {
         return context.getSharedPreferences(prefName,
                 Context.MODE_MULTI_PROCESS);
-    }
-
-    public static int[] getDisplaySize() {
-        return new int[]{getPreferences().getInt("screen_width", 480),
-                getPreferences().getInt("screen_height", 854)};
-    }
-
-    public static void saveDisplaySize(Activity activity) {
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        activity.getWindowManager().getDefaultDisplay()
-                .getMetrics(displaymetrics);
-        SharedPreferences.Editor editor = getPreferences().edit();
-        editor.putInt("screen_width", displaymetrics.widthPixels);
-        editor.putInt("screen_height", displaymetrics.heightPixels);
-        editor.putFloat("density", displaymetrics.density);
-        editor.commit();
     }
 
     public static void showToast(int message) {

@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 
 import com.example.l.common.application.AppApplication;
-import com.example.l.common.model.Update;
+import com.example.l.common.model.entity.Update;
 import com.thirdparty.proxy.utils.DialogHelp;
 import com.thirdparty.proxy.utils.WindowUtils;
 

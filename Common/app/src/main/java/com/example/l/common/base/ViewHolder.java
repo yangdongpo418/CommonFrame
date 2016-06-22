@@ -1,66 +1,282 @@
 package com.example.l.common.base;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Paint;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.v7.widget.RecyclerView;
+import android.text.util.Linkify;
 import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.widget.Checkable;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RatingBar;
+import android.widget.TextView;
 
-/**
- * @author:dongpo
- * 创建时间: 2016/3/31
- * 描述:对BaseAdapter的getView方法进行封装
- * 作用: 1、对convertView进行复用，并将convertView进行返回
- *      2、将findViewById找到的View存入SparseArray中。
- * 修改:
- */
-public class ViewHolder {
-    /**------------ListView中的ItemView----------------*/
-    private final View mConvertView;
-    /**------------用来缓存mConvertView中的子View对象，key为子view的id，value为子view的View对象----------------*/
-    private final SparseArray<View> cache;
+public class ViewHolder extends RecyclerView.ViewHolder
+{
+    private SparseArray<View> mViews;
+    private int mPosition;
+    private View mConvertView;
+    private Context mContext;
+    private int mLayoutId;
 
-    private ViewHolder(View convertView){
-        mConvertView = convertView;
-        cache=new SparseArray<>();
+    public ViewHolder(Context context, View itemView, ViewGroup parent, int position)
+    {
+        super(itemView);
+        mContext = context;
+        mConvertView = itemView;
+        mPosition = position;
+        mViews = new SparseArray<View>();
+        mConvertView.setTag(this);
     }
 
-    /**
-     * @param layoutId convertView的布局id
-     * @param convertView ListView复用的itemView
-     * @param parent ListView本身
-     * @return ViewHolder
-     * BaseAdapter的getView方法，每执行一次，本方法就执行一次，主要对ConvertView进行复用，和对ConvertView下的子View进行保存；
-     */
-    public static ViewHolder getInstance(int layoutId, View convertView, ViewGroup parent){
-        ViewHolder holder=null;
-        if(convertView==null){
-            //如果convertView为null，进行打气，并将打气后的View对象，通过构造方法，保存到成员变量中
-            convertView = View.inflate(parent.getContext(), layoutId, null);
-            holder=new ViewHolder(convertView);
-            //将holder作为标签存到convertView中
-            convertView.setTag(holder);
-        }else{
-            holder= (ViewHolder) convertView.getTag();
+
+    public static ViewHolder get(Context context, View convertView,
+                                 ViewGroup parent, int layoutId, int position)
+    {
+        if (convertView == null)
+        {
+            View itemView = LayoutInflater.from(context).inflate(layoutId, parent,
+                    false);
+            ViewHolder holder = new ViewHolder(context, itemView, parent, position);
+            holder.mLayoutId = layoutId;
+            return holder;
+        } else
+        {
+            ViewHolder holder = (ViewHolder) convertView.getTag();
+            holder.mPosition = position;
+            return holder;
         }
-        return holder;
     }
 
+
     /**
-     * @param viewId 传入每个子View的Id
-     * @return 子View对应的View对象，如果SpareArray集合中没有则进行findViewById，有则直接进行返回
+     * 通过viewId获取控件
+     *
+     * @param viewId
+     * @return
      */
-    public View getViewById(int viewId){
-        View child = cache.get(viewId);
-        if (child == null) {
-            child=mConvertView.findViewById(viewId);
-            cache.put(viewId,child);
+    public <T extends View> T getView(int viewId)
+    {
+        View view = mViews.get(viewId);
+        if (view == null)
+        {
+            view = mConvertView.findViewById(viewId);
+            mViews.put(viewId, view);
         }
-        return child;
+        return (T) view;
     }
 
-    /**
-     * @return 返回convertView
-     */
-    public View getRootView(){
+    public View getConvertView()
+    {
         return mConvertView;
+    }
+
+    /**
+     * 设置TextView的值
+     *
+     * @param viewId
+     * @param text
+     * @return
+     */
+    public ViewHolder setText(int viewId, String text)
+    {
+        TextView tv = getView(viewId);
+        tv.setText(text);
+        return this;
+    }
+
+    public ViewHolder setImageResource(int viewId, int resId)
+    {
+        ImageView view = getView(viewId);
+        view.setImageResource(resId);
+        return this;
+    }
+
+    public ViewHolder setImageBitmap(int viewId, Bitmap bitmap)
+    {
+        ImageView view = getView(viewId);
+        view.setImageBitmap(bitmap);
+        return this;
+    }
+
+    public ViewHolder setImageDrawable(int viewId, Drawable drawable)
+    {
+        ImageView view = getView(viewId);
+        view.setImageDrawable(drawable);
+        return this;
+    }
+
+    public ViewHolder setBackgroundColor(int viewId, int color)
+    {
+        View view = getView(viewId);
+        view.setBackgroundColor(color);
+        return this;
+    }
+
+    public ViewHolder setBackgroundRes(int viewId, int backgroundRes)
+    {
+        View view = getView(viewId);
+        view.setBackgroundResource(backgroundRes);
+        return this;
+    }
+
+    public ViewHolder setTextColor(int viewId, int textColor)
+    {
+        TextView view = getView(viewId);
+        view.setTextColor(textColor);
+        return this;
+    }
+
+    public ViewHolder setTextColorRes(int viewId, int textColorRes)
+    {
+        TextView view = getView(viewId);
+        view.setTextColor(mContext.getResources().getColor(textColorRes));
+        return this;
+    }
+
+    @SuppressLint("NewApi")
+    public ViewHolder setAlpha(int viewId, float value)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB)
+        {
+            getView(viewId).setAlpha(value);
+        } else
+        {
+            // Pre-honeycomb hack to set Alpha value
+            AlphaAnimation alpha = new AlphaAnimation(value, value);
+            alpha.setDuration(0);
+            alpha.setFillAfter(true);
+            getView(viewId).startAnimation(alpha);
+        }
+        return this;
+    }
+
+    public ViewHolder setVisible(int viewId, boolean visible)
+    {
+        View view = getView(viewId);
+        view.setVisibility(visible ? View.VISIBLE : View.GONE);
+        return this;
+    }
+
+    public ViewHolder linkify(int viewId)
+    {
+        TextView view = getView(viewId);
+        Linkify.addLinks(view, Linkify.ALL);
+        return this;
+    }
+
+    public ViewHolder setTypeface(Typeface typeface, int... viewIds)
+    {
+        for (int viewId : viewIds)
+        {
+            TextView view = getView(viewId);
+            view.setTypeface(typeface);
+            view.setPaintFlags(view.getPaintFlags() | Paint.SUBPIXEL_TEXT_FLAG);
+        }
+        return this;
+    }
+
+    public ViewHolder setProgress(int viewId, int progress)
+    {
+        ProgressBar view = getView(viewId);
+        view.setProgress(progress);
+        return this;
+    }
+
+    public ViewHolder setProgress(int viewId, int progress, int max)
+    {
+        ProgressBar view = getView(viewId);
+        view.setMax(max);
+        view.setProgress(progress);
+        return this;
+    }
+
+    public ViewHolder setMax(int viewId, int max)
+    {
+        ProgressBar view = getView(viewId);
+        view.setMax(max);
+        return this;
+    }
+
+    public ViewHolder setRating(int viewId, float rating)
+    {
+        RatingBar view = getView(viewId);
+        view.setRating(rating);
+        return this;
+    }
+
+    public ViewHolder setRating(int viewId, float rating, int max)
+    {
+        RatingBar view = getView(viewId);
+        view.setMax(max);
+        view.setRating(rating);
+        return this;
+    }
+
+    public ViewHolder setTag(int viewId, Object tag)
+    {
+        View view = getView(viewId);
+        view.setTag(tag);
+        return this;
+    }
+
+    public ViewHolder setTag(int viewId, int key, Object tag)
+    {
+        View view = getView(viewId);
+        view.setTag(key, tag);
+        return this;
+    }
+
+    public ViewHolder setChecked(int viewId, boolean checked)
+    {
+        Checkable view = (Checkable) getView(viewId);
+        view.setChecked(checked);
+        return this;
+    }
+
+    /**
+     * 关于事件的
+     */
+    public ViewHolder setOnClickListener(int viewId,
+                                         View.OnClickListener listener)
+    {
+        View view = getView(viewId);
+        view.setOnClickListener(listener);
+        return this;
+    }
+
+    public ViewHolder setOnTouchListener(int viewId,
+                                         View.OnTouchListener listener)
+    {
+        View view = getView(viewId);
+        view.setOnTouchListener(listener);
+        return this;
+    }
+
+    public ViewHolder setOnLongClickListener(int viewId,
+                                             View.OnLongClickListener listener)
+    {
+        View view = getView(viewId);
+        view.setOnLongClickListener(listener);
+        return this;
+    }
+
+    public void updatePosition(int position)
+    {
+        mPosition = position;
+    }
+
+    public int getLayoutId()
+    {
+        return mLayoutId;
     }
 }

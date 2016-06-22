@@ -25,7 +25,7 @@ import org.kymjs.kjframe.utils.StringUtils;
  * @author
  * @created
  */
-public class ToolBarActivity extends BaseActivity implements
+public abstract class ToolBarActivity extends BaseActivity implements
         DialogControl {
 
     public Toolbar mToolbar;

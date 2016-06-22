@@ -19,7 +19,7 @@ import org.kymjs.kjframe.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListBaseAdapter<T> extends BaseAdapter {
+public abstract class BaseListAdapter<T> extends BaseAdapter {
     public static final int STATE_EMPTY_ITEM = 0;
     public static final int STATE_LOAD_MORE = 1;
     public static final int STATE_NO_MORE = 2;
@@ -34,6 +34,23 @@ public class ListBaseAdapter<T> extends BaseAdapter {
     protected int _loadFinishText;
     protected int _noDateText;
     protected int mScreenWidth;
+
+    private final int mLayoutId;
+    protected List<T> mDatas = null;
+
+    public BaseListAdapter(int resId) {
+        this(new ArrayList<T>(), resId);
+    }
+
+
+    public BaseListAdapter(List<T> datas, int layoutId) {
+        _loadmoreText = R.string.loading;
+        _loadFinishText = R.string.loading_no_more;
+        _noDateText = R.string.error_view_no_data;
+
+        mDatas = datas;
+        mLayoutId = layoutId;
+    }
 
     private LayoutInflater mInflater;
 
@@ -57,26 +74,18 @@ public class ListBaseAdapter<T> extends BaseAdapter {
         return this.state;
     }
 
-    protected ArrayList<T> mDatas = new ArrayList<T>();
-
-    public ListBaseAdapter() {
-        _loadmoreText = R.string.loading;
-        _loadFinishText = R.string.loading_no_more;
-        _noDateText = R.string.error_view_no_data;
-    }
-
     @Override
     public int getCount() {
         switch (getState()) {
             case STATE_EMPTY_ITEM:
-                return getDataSizePlus1();
+                return getTotalDataSize();
             case STATE_NETWORK_ERROR:
             case STATE_LOAD_MORE:
-                return getDataSizePlus1();
+                return getTotalDataSize();
             case STATE_NO_DATA:
                 return 1;
             case STATE_NO_MORE:
-                return getDataSizePlus1();
+                return getTotalDataSize();
             case STATE_LESS_ONE_PAGE:
                 return getDataSize();
             default:
@@ -85,8 +94,8 @@ public class ListBaseAdapter<T> extends BaseAdapter {
         return getDataSize();
     }
 
-    public int getDataSizePlus1(){
-        if(hasFooterView()){
+    public int getTotalDataSize() {
+        if (hasFooterView()) {
             return getDataSize() + 1;
         }
         return getDataSize();
@@ -109,12 +118,12 @@ public class ListBaseAdapter<T> extends BaseAdapter {
         return arg0;
     }
 
-    public void setData(ArrayList<T> data) {
+    public void setData(List<T> data) {
         mDatas = data;
         notifyDataSetChanged();
     }
 
-    public ArrayList<T> getData() {
+    public List<T> getData() {
         return mDatas == null ? (mDatas = new ArrayList<T>()) : mDatas;
     }
 
@@ -132,9 +141,9 @@ public class ListBaseAdapter<T> extends BaseAdapter {
         notifyDataSetChanged();
     }
 
-    public void addItem(int pos, T obj) {
+    public void addItem(int position, T obj) {
         if (mDatas != null) {
-            mDatas.add(pos, obj);
+            mDatas.add(position, obj);
         }
         notifyDataSetChanged();
     }
@@ -169,7 +178,7 @@ public class ListBaseAdapter<T> extends BaseAdapter {
     @SuppressLint("InflateParams")
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (position == getCount() - 1&&hasFooterView()) {// 最后一条
+        if (position == getCount() - 1 && hasFooterView()) {// 最后一条
             // if (position < _data.size()) {
             // position = getCount() - 2; // footview
             // }
@@ -186,35 +195,35 @@ public class ListBaseAdapter<T> extends BaseAdapter {
                         .findViewById(R.id.progressbar);
                 TextView text = (TextView) mFooterView.findViewById(R.id.text);
                 switch (getState()) {
-                case STATE_LOAD_MORE:
-                    setFooterViewLoading();
-                    break;
-                case STATE_NO_MORE:
-                    mFooterView.setVisibility(View.VISIBLE);
-                    progress.setVisibility(View.GONE);
-                    text.setVisibility(View.VISIBLE);
-                    text.setText(_loadFinishText);
-                    break;
-                case STATE_EMPTY_ITEM:
-                    progress.setVisibility(View.GONE);
-                    mFooterView.setVisibility(View.VISIBLE);
-                    text.setText(_noDateText);
-                    break;
-                case STATE_NETWORK_ERROR:
-                    mFooterView.setVisibility(View.VISIBLE);
-                    progress.setVisibility(View.GONE);
-                    text.setVisibility(View.VISIBLE);
-                    if (WindowUtils.hasInternet()) {
-                        text.setText("加载出错了");
-                    } else {
-                        text.setText("没有可用的网络");
-                    }
-                    break;
-                default:
-                    progress.setVisibility(View.GONE);
-                    mFooterView.setVisibility(View.GONE);
-                    text.setVisibility(View.GONE);
-                    break;
+                    case STATE_LOAD_MORE:
+                        setFooterViewLoading();
+                        break;
+                    case STATE_NO_MORE:
+                        mFooterView.setVisibility(View.VISIBLE);
+                        progress.setVisibility(View.GONE);
+                        text.setVisibility(View.VISIBLE);
+                        text.setText(_loadFinishText);
+                        break;
+                    case STATE_EMPTY_ITEM:
+                        progress.setVisibility(View.GONE);
+                        mFooterView.setVisibility(View.VISIBLE);
+                        text.setText(_noDateText);
+                        break;
+                    case STATE_NETWORK_ERROR:
+                        mFooterView.setVisibility(View.VISIBLE);
+                        progress.setVisibility(View.GONE);
+                        text.setVisibility(View.VISIBLE);
+                        if (WindowUtils.hasInternet()) {
+                            text.setText("加载出错了");
+                        } else {
+                            text.setText("没有可用的网络");
+                        }
+                        break;
+                    default:
+                        progress.setVisibility(View.GONE);
+                        mFooterView.setVisibility(View.GONE);
+                        text.setVisibility(View.GONE);
+                        break;
                 }
                 return mFooterView;
             }
@@ -222,16 +231,16 @@ public class ListBaseAdapter<T> extends BaseAdapter {
         if (position < 0) {
             position = 0; // 若列表没有数据，是没有footview/headview的
         }
-        return getRealView(position, convertView, parent);
-    }
 
-    protected View getRealView(int position, View convertView, ViewGroup parent) {
-        return null;
+        ListViewHolder holder = ListViewHolder.getInstance(mLayoutId, convertView, parent);
+        //不知道子类具体的设置方式，进行抽象，由子类实现
+        setItemData(holder,position);
+        return holder.getRootView();
     }
 
     private LinearLayout mFooterView;
 
-    protected boolean hasFooterView(){
+    protected boolean hasFooterView() {
         return true;
     }
 
@@ -270,4 +279,10 @@ public class ListBaseAdapter<T> extends BaseAdapter {
     protected void setText(TextView textView, String text) {
         setText(textView, text, false);
     }
+
+    /**
+     * @param holder 通过holder的getViewById方法获得子View的View对象
+     * @param position 当前ListView对应的索引
+     */
+    public abstract void setItemData(ListViewHolder holder, int position);
 }

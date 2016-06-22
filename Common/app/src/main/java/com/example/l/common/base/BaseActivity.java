@@ -3,6 +3,7 @@ package com.example.l.common.base;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,7 @@ import butterknife.ButterKnife;
  * 描述:
  * 修改:
  */
-public class BaseActivity extends AppCompatActivity implements DialogControl {
+public abstract class BaseActivity extends AppCompatActivity implements DialogControl {
     private boolean _isVisible;
     private ProgressDialog _waitDialog;
 
@@ -31,8 +32,6 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     private LoadingStateView mLoadingStateView;
     private boolean mIsAddLoadingState = false;
     private View mTargetLoadingStateView;
-    private boolean mIsPullRefreshEnable;
-    private View mTargetPullRefreshView;
 
     @Override
     protected void onDestroy() {
@@ -113,15 +112,8 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
         return contentView;
     }
 
-    protected int getLayoutId() {
-        return 0;
-    }
-
     protected View getLayoutView() {
-        if (getLayoutId() != 0) {
-            return mInflater.inflate(getLayoutId(), null);
-        }
-        return null;
+        return mInflater.inflate(getLayoutId(), null);
     }
 
     protected View inflateView(int resId) {
@@ -143,6 +135,10 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
     @Override
     protected void onResume() {
         super.onResume();
+    }
+
+    public void showToast(String message) {
+        showToast(message, 0, Gravity.BOTTOM);
     }
 
     public void showToast(int msgResid, int icon, int gravity) {
@@ -203,19 +199,9 @@ public class BaseActivity extends AppCompatActivity implements DialogControl {
         mTargetLoadingStateView = targetView;
     }
 
-    /**
-     * @param isPullRefreshEnable
-     * @param targetView  下拉刷新比较特殊，如果targetView为ListView，RecycleView，ScrollView等带滚动条的页面
-     *                    必须将下拉刷新直接包在外层，否侧滑动失效
-     */
-    public final void setPullRefreshEnable(boolean isPullRefreshEnable, View targetView){
-        mIsPullRefreshEnable = isPullRefreshEnable;
-        mTargetPullRefreshView = targetView;
-    }
+    protected abstract void initView();
 
-    public void initView() {
-    }
+    protected abstract void initData();
 
-    public void initData() {
-    }
+    protected abstract int getLayoutId();
 }

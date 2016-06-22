@@ -18,11 +18,7 @@
         android:theme="@style/AppTheme">
 
         <activity android:name=".business.text.activity.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
 
         </activity>
 
@@ -30,7 +26,19 @@
 
         </activity>
 
+        <activity android:name=".business.text.activity.RxActivity">
+
+        </activity>
+
         <activity android:name=".business.text.activity.SplashActivity"></activity>
+        <activity android:name=".business.text.activity.RecycleActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+
+        </activity>
 
         <service android:name=".service.DownloadService"></service>
         <service android:name=".service.LogUploadService"></service>

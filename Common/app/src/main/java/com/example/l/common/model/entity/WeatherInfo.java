@@ -1,4 +1,4 @@
-package com.example.l.common.model;
+package com.example.l.common.model.entity;
 
 /**
  * Created by byang059 on 5/19/2016.

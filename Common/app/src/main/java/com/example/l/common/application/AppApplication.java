@@ -1,6 +1,6 @@
 package com.example.l.common.application;
 
-import com.example.l.common.model.User;
+import com.example.l.common.model.entity.User;
 import com.thirdparty.proxy.base.BaseApplication;
 
 

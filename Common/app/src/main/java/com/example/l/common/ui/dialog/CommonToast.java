@@ -9,6 +9,7 @@ import android.content.Context;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -76,8 +77,11 @@ public class CommonToast {
 		_toastVw.messageTv.setText(s);
 	}
 
-	public void setMessageIc(int i) {
-		_toastVw.messageIc.setImageResource(i);
+	public void setMessageIc(int resId) {
+		if(resId != 0 ){
+			_toastVw.messageIc.setVisibility(View.VISIBLE);
+			_toastVw.messageIc.setImageResource(resId);
+		}
 	}
 
 	public void show() {

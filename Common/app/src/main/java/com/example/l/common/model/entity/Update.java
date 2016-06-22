@@ -1,4 +1,4 @@
-package com.example.l.common.model;
+package com.example.l.common.model.entity;
 
 /**
  * @author:dongpo 创建时间: 2016/5/21

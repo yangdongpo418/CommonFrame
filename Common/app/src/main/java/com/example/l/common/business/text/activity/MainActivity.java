@@ -1,5 +1,6 @@
 package com.example.l.common.business.text.activity;
 
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -30,22 +31,26 @@ import com.amap.api.maps2d.model.Marker;
 import com.amap.api.services.core.PoiItem;
 import com.example.l.common.R;
 import com.example.l.common.api.BackEndApi;
-import com.example.l.common.base.BaseListViewAdapter;
+import com.example.l.common.base.BaseListAdapter;
 import com.example.l.common.base.ToolBarActivity;
-import com.example.l.common.base.ViewHolder;
+import com.example.l.common.base.ListViewHolder;
+import com.example.l.common.model.entity.MovieInfo;
 import com.example.l.common.ui.PullReFreshViewSimple;
 import com.facebook.drawee.view.SimpleDraweeView;
-import com.thirdparty.proxy.log.TLog;
 import com.thirdparty.proxy.map.LocationClient;
 import com.thirdparty.proxy.map.view.MapFragment;
 import com.thirdparty.proxy.model.Location;
-import com.thirdparty.proxy.net.volley.RequestListener;
 import com.thirdparty.proxy.utils.WindowUtils;
 
+import java.io.IOException;
 import java.util.List;
 
 import butterknife.Bind;
 import butterknife.OnClick;
+import okhttp3.ResponseBody;
+import retrofit2.adapter.rxjava.HttpException;
+import rx.Subscriber;
+import rx.Subscription;
 
 public class MainActivity extends ToolBarActivity implements TextWatcher, View.OnFocusChangeListener {
 
@@ -139,18 +144,58 @@ public class MainActivity extends ToolBarActivity implements TextWatcher, View.O
 
     @OnClick(R.id.request_net)
     public void request(View view){
-        setActionBarTitleColor(R.color.white);
-        BackEndApi.baiDu(new RequestListener<String>() {
+        /*BackEndApi.movieList(0, 10, new Callback<MovieInfo>() {
             @Override
-            public void onSuccess(String response) {
-                showToast(response.toString(),0, Gravity.CENTER);
-                TLog.i(response);
-//                updateViewState(Constants.STATE_LOADING);
+            public void onResponse(Call<MovieInfo> call, Response<MovieInfo> response) {
+                if (response.isSuccessful()) {
+                    MovieInfo body = response.body();
+                    showToast(body.toString(), 0, Gravity.BOTTOM);
+                    Log.d("Log_text", "MainActivity+onResponse" + body.toString());
+                }
             }
 
             @Override
-            public void onFailure(String error) {
-                showToast(error,0, Gravity.CENTER);
+            public void onFailure(Call<MovieInfo> call, Throwable t) {
+
+            }
+        });*/
+        Subscription subscription = BackEndApi.movieList(0, 10, new Subscriber<MovieInfo>() {
+
+            private ProgressDialog mProgressDialog;
+
+            @Override
+            public void onCompleted() {
+                mProgressDialog.dismiss();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                mProgressDialog.dismiss();
+                e.printStackTrace();
+                if(e instanceof HttpException){
+                    HttpException error = (HttpException) e;
+                    int code = error.code();
+                    Log.d("Log_text", "MainActivity+onError" + code);
+                    ResponseBody responseBody = error.response().errorBody();
+                    try {
+                        byte[] bytes = responseBody.bytes();
+                        String err = new String(bytes,"UTF-8");
+                        showToast(err, R.mipmap.btn_radio_on, Gravity.BOTTOM);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+
+            }
+
+            @Override
+            public void onNext(MovieInfo movieInfo) {
+                showToast(movieInfo.toString(), 0, Gravity.BOTTOM);
+            }
+
+            @Override
+            public void onStart() {
+                mProgressDialog = showWaitDialog();
             }
         });
     }
@@ -329,7 +374,7 @@ public class MainActivity extends ToolBarActivity implements TextWatcher, View.O
         }
     }
 
-    public class MapAdapter extends BaseListViewAdapter<PoiItem>{
+    public class MapAdapter extends BaseListAdapter<PoiItem> {
 
         private final List<PoiItem> mContent;
 
@@ -339,7 +384,7 @@ public class MainActivity extends ToolBarActivity implements TextWatcher, View.O
         }
 
         @Override
-        public void setItemData(ViewHolder holder, int position) {
+        public void setItemData(ListViewHolder holder, int position) {
             TextView tv = (TextView) holder.getViewById(android.R.id.text1);
             tv.setText(mContent.get(position).getTitle());
         }
