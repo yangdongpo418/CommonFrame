@@ -455,6 +455,7 @@ public class PullReFreshView extends ViewGroup {
 
     public boolean canChildScrollDown(View Target) {
         return ViewCompat.canScrollVertically(Target, 1);
+        //720 1280 294ppi
     }
 
     public interface OnRefreshListener {

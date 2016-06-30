@@ -14,7 +14,6 @@
         <item name="actionMenuTextColor">@color/black</item> <!--  敲定颜色-->
         <item name="android:textColorSecondary">@color/white</item>
         <item name="android:textSize">18sp</item> <!--  搞掂字体大小-->
-
     </style>
 
     <style name="ToolBarTheme.TextAppearance">
